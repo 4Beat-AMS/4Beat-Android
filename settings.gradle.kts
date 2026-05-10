@@ -26,3 +26,4 @@ rootProject.name = "4Beat"
 include(":app")
 include(":data")
 include(":domain")
+include(":presentation")

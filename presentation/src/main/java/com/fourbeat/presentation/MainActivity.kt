@@ -1,4 +1,4 @@
-package com.fourbeat.android
+package com.fourbeat.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
