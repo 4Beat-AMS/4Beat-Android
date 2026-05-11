@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun FourBeatSpacer(
     modifier: Modifier = Modifier,
-    size: Int,
+    size: Int = 0,
 ) {
     Spacer(
         modifier = modifier.size(size.dp)

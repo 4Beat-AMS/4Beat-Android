@@ -33,9 +33,9 @@ fun FourBeatButton(
         shape = RoundedCornerShape(size = corderRadius),
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
-            disabledContainerColor = if (isLoading) containerColor else containerColor.copy(alpha = 0.2f),
+            disabledContainerColor = if (isLoading) containerColor else containerColor.copy(alpha = 0.1f),
             contentColor = contentColor,
-            disabledContentColor = if (isLoading) contentColor else contentColor.copy(alpha = 0.2f)
+            disabledContentColor = contentColor
         ),
         onClick = onClick
     ) {
