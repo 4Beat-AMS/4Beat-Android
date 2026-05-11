@@ -7,6 +7,6 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     override suspend fun login(email: String): Long {
-        return 0L
+        throw IllegalStateException()
     }
 }
