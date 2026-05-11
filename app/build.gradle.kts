@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
@@ -20,6 +22,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val properties = Properties().apply {
+            load(project.rootProject.file("local.properties").inputStream())
+        }
+        buildConfigField("String", "KAKAO_NATIVE_KEY", properties.getProperty("KAKAO_NATIVE_KEY"))
+        manifestPlaceholders["KAKAO_REDIRECT_URI"] = properties.getProperty("KAKAO_REDIRECT_URI")
     }
 
     buildTypes {
@@ -50,4 +58,7 @@ dependencies {
 
     // timber
     implementation(libs.timber)
+
+    // kakao
+    implementation(libs.kakao.login)
 }
