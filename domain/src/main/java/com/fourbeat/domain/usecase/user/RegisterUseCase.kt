@@ -7,7 +7,7 @@ import javax.inject.Inject
 class RegisterUseCase @Inject constructor(
     private val userRepository: UserRepository,
 ) {
-    suspend operator fun invoke(request: RegisterRequest): Result<Long> = runCatching {
-        userRepository.register(request)
+    suspend operator fun invoke(request: RegisterRequest): Result<Unit> = runCatching {
+        val uid = userRepository.register(request)
     }
 }

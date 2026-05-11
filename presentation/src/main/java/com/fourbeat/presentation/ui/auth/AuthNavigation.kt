@@ -8,6 +8,7 @@ import com.fourbeat.presentation.navigation.AuthScreen
 import com.fourbeat.presentation.navigation.ScreenGraph
 import com.fourbeat.presentation.ui.FourBeatAppState
 import com.fourbeat.presentation.ui.auth.login.LoginRoute
+import com.fourbeat.presentation.ui.auth.register.RegisterRoute
 import com.fourbeat.presentation.ui.main.navigateToMainGraph
 
 fun NavGraphBuilder.nestedAuthGraph(appState: FourBeatAppState) {
@@ -21,7 +22,10 @@ fun NavGraphBuilder.nestedAuthGraph(appState: FourBeatAppState) {
             )
         }
         composable<AuthScreen.Register> {
-
+            RegisterRoute(
+                navigateToHome = navController::navigateToMainGraph,
+                onBack = navController::popBackStack
+            )
         }
     }
 }

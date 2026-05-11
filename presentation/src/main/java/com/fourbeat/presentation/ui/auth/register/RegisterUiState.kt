@@ -17,8 +17,10 @@ sealed interface RegisterEvent {
     data class OnNameChanged(val name: String) : RegisterEvent
     data class OnNicknameChanged(val nickname: String) : RegisterEvent
     data object OnRegisterButtonClicked : RegisterEvent
+    data object OnBackClicked : RegisterEvent
 }
 
 sealed interface RegisterSideEffect {
-    data class NavigateToHome(val uid: Long) : RegisterSideEffect
+    data object NavigateToHome : RegisterSideEffect
+    data object NavigateToBack : RegisterSideEffect
 }

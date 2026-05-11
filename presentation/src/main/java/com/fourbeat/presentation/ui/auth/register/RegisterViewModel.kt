@@ -6,8 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.fourbeat.domain.model.user.RegisterRequest
 import com.fourbeat.domain.usecase.user.RegisterUseCase
+import com.fourbeat.presentation.navigation.AuthScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -16,11 +18,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-    // private val savedStateHandle: SavedStateHandle, // email from route
     private val registerUseCase: RegisterUseCase,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-
-    // private val email: String = savedStateHandle["email"] ?: ""
+    private val email = savedStateHandle.toRoute<AuthScreen.Register>().email
 
     var uiState by mutableStateOf(RegisterUiState())
         private set
@@ -33,6 +34,9 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.OnNameChanged -> uiState = uiState.copy(name = event.name)
             is RegisterEvent.OnNicknameChanged -> uiState = uiState.copy(nickname = event.nickname)
             RegisterEvent.OnRegisterButtonClicked -> register()
+            RegisterEvent.OnBackClicked -> viewModelScope.launch {
+                _sideEffect.send(RegisterSideEffect.NavigateToBack)
+            }
         }
     }
 
@@ -43,15 +47,16 @@ class RegisterViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true)
             registerUseCase(
                 RegisterRequest(
-                    email = "", // email,
+                    email = email,
                     name = uiState.name,
                     nickname = uiState.nickname,
                 )
             )
-                .onSuccess { uid ->
-                    _sideEffect.send(RegisterSideEffect.NavigateToHome(uid))
+                .onSuccess {
+                    _sideEffect.send(RegisterSideEffect.NavigateToHome)
                 }
                 .onFailure {
+
                 }
             uiState = uiState.copy(isLoading = false)
         }
