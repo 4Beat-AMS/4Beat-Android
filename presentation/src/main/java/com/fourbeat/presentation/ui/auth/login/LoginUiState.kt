@@ -5,9 +5,11 @@ data class LoginUiState(
 )
 
 sealed interface LoginEvent {
-    data class OnLoginButtonClicked(val email: String) : LoginEvent
+    data object OnLoginButtonClicked : LoginEvent
 }
 
 sealed interface LoginSideEffect {
-    data class NavigateToHome(val uid: Long) : LoginSideEffect
+    data class NavigateToRegister(val email: String): LoginSideEffect
+
+    data object NavigateToHome : LoginSideEffect
 }

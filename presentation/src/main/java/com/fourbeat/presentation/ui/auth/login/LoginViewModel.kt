@@ -24,7 +24,7 @@ class LoginViewModel @Inject constructor(
 
     fun onEvent(event: LoginEvent) {
         when (event) {
-            is LoginEvent.OnLoginButtonClicked -> login(event.email)
+            is LoginEvent.OnLoginButtonClicked -> login("test@gmail.com")
         }
     }
 
@@ -32,10 +32,11 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
             loginUseCase(email)
-                .onSuccess { uid ->
-                    _sideEffect.send(LoginSideEffect.NavigateToHome(uid))
+                .onSuccess {
+                    _sideEffect.send(LoginSideEffect.NavigateToHome)
                 }
                 .onFailure {
+                    _sideEffect.send(LoginSideEffect.NavigateToRegister(email))
                 }
             uiState = uiState.copy(isLoading = false)
         }
