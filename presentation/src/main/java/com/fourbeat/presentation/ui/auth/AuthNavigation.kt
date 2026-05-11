@@ -7,13 +7,18 @@ import androidx.navigation.navigation
 import com.fourbeat.presentation.navigation.AuthScreen
 import com.fourbeat.presentation.navigation.ScreenGraph
 import com.fourbeat.presentation.ui.FourBeatAppState
+import com.fourbeat.presentation.ui.auth.login.LoginRoute
+import com.fourbeat.presentation.ui.main.navigateToMainGraph
 
 fun NavGraphBuilder.nestedAuthGraph(appState: FourBeatAppState) {
     val navController = appState.naveController
 
     navigation<ScreenGraph.Auth>(startDestination = AuthScreen.Login) {
         composable<AuthScreen.Login> {
-
+            LoginRoute(
+                navigateToHome = navController::navigateToMainGraph,
+                navigateToRegister = navController::navigateToRegister
+            )
         }
         composable<AuthScreen.Register> {
 
@@ -22,8 +27,8 @@ fun NavGraphBuilder.nestedAuthGraph(appState: FourBeatAppState) {
 }
 
 fun NavController.navigateToAuthGraph() = navigate(ScreenGraph.Auth) {
-    popUpTo(id = graph.id, { inclusive = true })
+    popUpTo(id = graph.id) { inclusive = true }
 }
 
-fun NavController.navigateToRegisterScreen(email: String) =
+fun NavController.navigateToRegister(email: String) =
     navigate(AuthScreen.Register(email))

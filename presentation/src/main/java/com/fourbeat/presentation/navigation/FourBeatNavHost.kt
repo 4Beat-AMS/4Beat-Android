@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import com.fourbeat.presentation.ui.FourBeatAppState
 import com.fourbeat.presentation.ui.auth.nestedAuthGraph
+import com.fourbeat.presentation.ui.main.nestedMainGraph
 
 @Composable
 fun FourBeatNavHost(
@@ -17,5 +18,6 @@ fun FourBeatNavHost(
         startDestination = ScreenGraph.Auth
     ) {
         nestedAuthGraph(appState = appState)
+        nestedMainGraph(appState = appState)
     }
 }
