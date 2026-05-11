@@ -1,15 +1,18 @@
 package com.fourbeat.presentation.ui.auth.login
 
+import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fourbeat.domain.usecase.auth.LoginUseCase
+import com.fourbeat.presentation.model.auth.KakaoClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -24,21 +27,27 @@ class LoginViewModel @Inject constructor(
 
     fun onEvent(event: LoginEvent) {
         when (event) {
-            is LoginEvent.OnLoginButtonClicked -> login("test@gmail.com")
+            is LoginEvent.OnLoginButtonClicked -> getKakaoEmail(event.context)
         }
     }
 
-    private fun login(email: String) {
+    private fun getKakaoEmail(context: Context) {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
-            loginUseCase(email)
-                .onSuccess {
-                    _sideEffect.send(LoginSideEffect.NavigateToHome)
-                }
-                .onFailure {
-                    _sideEffect.send(LoginSideEffect.NavigateToRegister(email))
-                }
+            runCatching { KakaoClient.loginWithTalk(context) }
+                .onSuccess { email -> login(email) }
+                .onFailure { t -> Timber.e(t) }
             uiState = uiState.copy(isLoading = false)
         }
+    }
+
+    private suspend fun login(email: String) {
+        loginUseCase(email)
+            .onSuccess {
+                _sideEffect.send(LoginSideEffect.NavigateToHome)
+            }
+            .onFailure {
+                _sideEffect.send(LoginSideEffect.NavigateToRegister(email))
+            }
     }
 }

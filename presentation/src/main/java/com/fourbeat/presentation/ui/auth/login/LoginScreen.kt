@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.fourbeat.presentation.theme.Black
 import com.fourbeat.presentation.theme.Gray500
@@ -49,6 +50,8 @@ private fun LoginScreen(
     uiState: LoginUiState,
     onEvent: (LoginEvent) -> Unit
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -73,7 +76,7 @@ private fun LoginScreen(
             text = "카카오로 계속하기",
             containerColor = Color(0xFFF1E105),
             contentColor = Black,
-            onClick = { onEvent(LoginEvent.OnLoginButtonClicked) }
+            onClick = { onEvent(LoginEvent.OnLoginButtonClicked(context)) }
         )
     }
 }
