@@ -31,16 +31,30 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    /**
+     * kakao에서 email 가져오기
+     * 성공하면, 이어서 login 요청
+     * 실패하면, 현재는 로깅
+     * */
     private fun getKakaoEmail(context: Context) {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
             runCatching { KakaoClient.loginWithTalk(context) }
-                .onSuccess { email -> login(email) }
-                .onFailure { t -> Timber.e(t) }
+                .onSuccess { email ->
+                    login(email)
+                }
+                .onFailure { t ->
+                    Timber.e(t)
+                }
             uiState = uiState.copy(isLoading = false)
         }
     }
 
+    /**
+     * 로그인 요청
+     * 성공하면, 홈 화면으로 이동
+     * 실패하면, 404시엔 회원가입 화면으로 이동 (TODO)
+     * */
     private suspend fun login(email: String) {
         loginUseCase(email)
             .onSuccess {

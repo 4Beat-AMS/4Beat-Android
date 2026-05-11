@@ -40,6 +40,12 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 회원가입 요청
+     * uiState가 validate 만족하지 않으면 반환
+     * 성공하면, 홈 화면으로 이동
+     * 실패하면, 에러 메세지 띄우기 (TODO)
+     * */
     private fun register() {
         if (uiState.isValid.not()) return
 
