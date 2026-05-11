@@ -6,6 +6,6 @@ import com.fourbeat.domain.model.user.RegisterRequest
 fun RegisterRequest.asBody(): RegisterRequestBody =
     RegisterRequestBody(
         email = email,
-        name = name,
+        username = name,
         nickname = nickname,
     )
