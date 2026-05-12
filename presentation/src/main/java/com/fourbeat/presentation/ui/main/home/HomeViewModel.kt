@@ -32,6 +32,7 @@ class HomeViewModel @Inject constructor(
         when (event) {
             is HomeEvent.OnPlusIconClicked -> onPlusIconClicked()
             is HomeEvent.OnHashIconClicked -> onHashIconClicked()
+            is HomeEvent.OnRefresh -> loadMyGroups()
             is HomeEvent.OnGroupItemClicked -> onGroupItemClicked(event.groupId)
         }
     }

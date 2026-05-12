@@ -1,9 +1,14 @@
 package com.fourbeat.presentation.ui.main.home
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fourbeat.presentation.ui.component.ErrorComponent
+import com.fourbeat.presentation.ui.component.HomeTopBar
+import com.fourbeat.presentation.ui.component.LoadingComponent
 
 @Composable
 fun HomeRoute(
@@ -36,4 +41,17 @@ private fun HomeScreen(
     uiState: HomeUiState,
     onEvent: (HomeEvent) -> Unit,
 ) {
+    Column(
+        modifier = modifier.fillMaxSize()
+    ) {
+        HomeTopBar(
+            onPlusClick = { onEvent(HomeEvent.OnPlusIconClicked) },
+            onHashClick = { onEvent(HomeEvent.OnHashIconClicked) },
+        )
+        when (uiState) {
+            HomeUiState.Loading -> LoadingComponent()
+            HomeUiState.Error -> ErrorComponent(onRefresh = { onEvent(HomeEvent.OnRefresh) })
+            is HomeUiState.Success -> Unit
+        }
+    }
 }

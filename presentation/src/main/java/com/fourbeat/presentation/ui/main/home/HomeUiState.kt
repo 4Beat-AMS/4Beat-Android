@@ -11,6 +11,7 @@ sealed class HomeUiState {
 sealed interface HomeEvent {
     data object OnPlusIconClicked : HomeEvent
     data object OnHashIconClicked : HomeEvent
+    data object OnRefresh : HomeEvent
     data class OnGroupItemClicked(val groupId: Long) : HomeEvent
 }
 
