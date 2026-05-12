@@ -17,16 +17,12 @@ import com.fourbeat.presentation.ui.component.HashTagTextField
 fun JoinGroupRoute(
     modifier: Modifier = Modifier,
     navigateToGroupDetail: (Long) -> Unit,
-    dismiss: () -> Unit,
     viewModel: JoinGroupViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                is JoinGroupSideEffect.NavigateToGroupDetail -> {
-                    dismiss()
-                    navigateToGroupDetail(effect.groupId)
-                }
+                is JoinGroupSideEffect.NavigateToGroupDetail -> navigateToGroupDetail(effect.groupId)
             }
         }
     }

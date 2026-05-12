@@ -33,7 +33,6 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
         dialog<MainScreen.JoinGroupDialog> {
             JoinGroupRoute(
                 navigateToGroupDetail = navController::navigateToGroupDetail,
-                dismiss = navController::popBackStack,
             )
         }
         composable<MainScreen.GroupDetail> {
@@ -53,4 +52,6 @@ fun NavController.navigateToCreateGroup() = navigate(MainScreen.CreateGroup)
 
 fun NavController.navigateToJoinGroupDialog() = navigate(MainScreen.JoinGroupDialog)
 
-fun NavController.navigateToGroupDetail(groupId: Long) = navigate(MainScreen.GroupDetail(groupId))
+fun NavController.navigateToGroupDetail(groupId: Long) = navigate(MainScreen.GroupDetail(groupId)) {
+    popUpTo(MainScreen.Home) { inclusive = false }
+}
