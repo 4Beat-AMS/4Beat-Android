@@ -7,16 +7,18 @@ data class JoinGroupUiState(
     val isLoading: Boolean = false,
 ) : Validatable {
     override val isValid: Boolean
-        get() = isLoading.not() && code.isNotBlank()
+        get() = isLoading.not() && code.length == CODE_LENGTH
+
+    companion object {
+        const val CODE_LENGTH = 6
+    }
 }
 
 sealed interface JoinGroupEvent {
     data class OnCodeChanged(val code: String) : JoinGroupEvent
     data object OnJoinButtonClicked : JoinGroupEvent
-    data object OnOutsideClicked : JoinGroupEvent
 }
 
 sealed interface JoinGroupSideEffect {
     data class NavigateToGroupDetail(val groupId: Long) : JoinGroupSideEffect
-    data object Dismiss : JoinGroupSideEffect
 }

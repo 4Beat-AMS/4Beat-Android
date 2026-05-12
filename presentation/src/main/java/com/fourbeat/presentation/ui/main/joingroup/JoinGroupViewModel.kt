@@ -26,9 +26,6 @@ class JoinGroupViewModel @Inject constructor(
         when (event) {
             is JoinGroupEvent.OnCodeChanged -> uiState = uiState.copy(code = event.code)
             is JoinGroupEvent.OnJoinButtonClicked -> joinGroup()
-            is JoinGroupEvent.OnOutsideClicked -> viewModelScope.launch {
-                _sideEffect.send(JoinGroupSideEffect.Dismiss)
-            }
         }
     }
 
