@@ -34,6 +34,12 @@ class CreateGroupViewModel @Inject constructor(
         }
     }
 
+    /**
+     * 그룹 생성 요청
+     * isValid 만족하지 않으면 반환
+     * 성공 시, 생성된 그룹 상세 화면으로 이동
+     * 실패 시, 에러 메세지 보여주기 (TODO)
+     * */
     private fun createGroup() {
         if (uiState.isValid.not()) return
 
