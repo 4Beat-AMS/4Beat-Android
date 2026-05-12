@@ -13,4 +13,13 @@ sealed interface AuthScreen {
 sealed interface MainScreen {
     @Serializable
     data object Home : MainScreen
+
+    @Serializable
+    data object CreateGroup : MainScreen
+
+    @Serializable
+    data object JoinGroupDialog : MainScreen
+
+    @Serializable
+    data class GroupDetail(val groupId: Long)
 }
