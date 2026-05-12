@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.fourbeat.presentation.theme.Black
 import com.fourbeat.presentation.theme.Gray200
 import com.fourbeat.presentation.theme.Gray500
-import com.fourbeat.presentation.theme.Gray700
 import com.fourbeat.presentation.theme.normal16
 import com.fourbeat.presentation.theme.normal20
 
@@ -45,11 +44,7 @@ fun FourBeatTextField(
     val underlineColor = if (isFocused) Black else Gray200
 
     Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = normal16,
-            color = Gray700,
-        )
+        FourBeatLabel(text = label)
         FourBeatSpacer(size = 12)
         BasicTextField(
             modifier = Modifier

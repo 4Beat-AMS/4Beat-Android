@@ -12,10 +12,12 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.fourbeat.presentation.theme.bold18
 import com.fourbeat.presentation.theme.contentPadding
 
 private val topBarHeight = 72.dp
@@ -37,6 +39,34 @@ fun TopbarForBack(
                 contentDescription = "ic-back",
             )
         }
+    }
+}
+
+@Composable
+fun TitleTopBar(
+    modifier: Modifier = Modifier,
+    title: String,
+    onBack: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(topBarHeight),
+    ) {
+        IconButton(
+            modifier = Modifier.align(Alignment.CenterStart),
+            onClick = onBack,
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "ic-back",
+            )
+        }
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = title,
+            style = bold18,
+        )
     }
 }
 

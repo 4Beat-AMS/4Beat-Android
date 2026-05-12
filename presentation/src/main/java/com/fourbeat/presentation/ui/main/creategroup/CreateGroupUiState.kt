@@ -10,8 +10,12 @@ data class CreateGroupUiState(
 ) : Validatable {
     override val isValid: Boolean
         get() = isLoading.not() &&
-                name.length in 1..20 &&
+                name.length in 1..NAME_MAX_LENGTH &&
                 selectedMemberCount != null
+
+    companion object {
+        const val NAME_MAX_LENGTH = 20
+    }
 }
 
 sealed interface CreateGroupEvent {
