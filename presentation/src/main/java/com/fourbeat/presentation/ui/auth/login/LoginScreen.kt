@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fourbeat.presentation.model.auth.OAuthUser
 import com.fourbeat.presentation.theme.Black
 import com.fourbeat.presentation.theme.Gray500
 import com.fourbeat.presentation.theme.White
@@ -25,14 +26,14 @@ import com.fourbeat.presentation.ui.component.FourBeatSpacer
 fun LoginRoute(
     modifier: Modifier = Modifier,
     navigateToHome: () -> Unit,
-    navigateToRegister: (String) -> Unit,
+    navigateToRegister: (OAuthUser) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
                 LoginSideEffect.NavigateToHome -> navigateToHome()
-                is LoginSideEffect.NavigateToRegister -> navigateToRegister(effect.email)
+                is LoginSideEffect.NavigateToRegister -> navigateToRegister(effect.oAuthUser)
             }
         }
     }

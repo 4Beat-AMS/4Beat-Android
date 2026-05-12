@@ -21,9 +21,11 @@ class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val email = savedStateHandle.toRoute<AuthScreen.Register>().email
+    private val oAuthUser = savedStateHandle.toRoute<AuthScreen.Register>()
 
-    var uiState by mutableStateOf(RegisterUiState())
+    var uiState by mutableStateOf(RegisterUiState(
+        name = oAuthUser.nickname?.take(10) ?: "")
+    )
         private set
 
     private val _sideEffect = Channel<RegisterSideEffect>()
@@ -53,7 +55,7 @@ class RegisterViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true)
             registerUseCase(
                 RegisterRequest(
-                    email = email,
+                    email = oAuthUser.email,
                     name = uiState.name,
                     nickname = uiState.nickname,
                 )

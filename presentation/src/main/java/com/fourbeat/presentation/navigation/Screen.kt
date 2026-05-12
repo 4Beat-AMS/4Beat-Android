@@ -7,10 +7,19 @@ sealed interface AuthScreen {
     data object Login : AuthScreen
 
     @Serializable
-    data class Register(val email: String) : AuthScreen
+    data class Register(val email: String, val nickname: String?) : AuthScreen
 }
 
 sealed interface MainScreen {
     @Serializable
     data object Home : MainScreen
+
+    @Serializable
+    data object CreateGroup : MainScreen
+
+    @Serializable
+    data object JoinGroupDialog : MainScreen
+
+    @Serializable
+    data class GroupDetail(val groupId: Long)
 }

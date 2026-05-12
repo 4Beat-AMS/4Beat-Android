@@ -18,7 +18,6 @@ import com.fourbeat.presentation.theme.White
 import com.fourbeat.presentation.theme.contentPadding
 import com.fourbeat.presentation.theme.normal16
 import com.fourbeat.presentation.theme.normal32
-import com.fourbeat.presentation.theme.normal56
 import com.fourbeat.presentation.ui.component.FourBeatButton
 import com.fourbeat.presentation.ui.component.FourBeatSpacer
 import com.fourbeat.presentation.ui.component.FourBeatTextField
@@ -87,14 +86,14 @@ private fun RegisterScreen(
                     value = uiState.name,
                     label = "이름",
                     placeholder = "이름을 알려주세요",
-                    maxLength = 10,
+                    maxLength = RegisterUiState.NAME_MAX_LENGTH,
                     onValueChange = { value -> onEvent(RegisterEvent.OnNameChanged(value)) }
                 )
                 FourBeatTextField(
                     value = uiState.nickname,
                     label = "닉네임",
                     placeholder = "닉네임을 알려주세요",
-                    maxLength = 10,
+                    maxLength = RegisterUiState.NICKNAME_MAX_LENGTH,
                     imeAction = ImeAction.Done,
                     onValueChange = { value -> onEvent(RegisterEvent.OnNicknameChanged(value)) }
                 )

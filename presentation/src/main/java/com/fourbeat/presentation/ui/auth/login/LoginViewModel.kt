@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.fourbeat.domain.usecase.auth.LoginUseCase
 import com.fourbeat.presentation.model.auth.KakaoClient
+import com.fourbeat.presentation.model.auth.OAuthUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -40,11 +41,11 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
             runCatching { KakaoClient.loginWithTalk(context) }
-                .onSuccess { email ->
-                    login(email)
+                .onSuccess { oAuthUser ->
+                    Timber.i(oAuthUser.toString())
+                    login(oAuthUser)
                 }
-                .onFailure { t ->
-                    Timber.e(t)
+                .onFailure {
                 }
             uiState = uiState.copy(isLoading = false)
         }
@@ -55,13 +56,13 @@ class LoginViewModel @Inject constructor(
      * 성공하면, 홈 화면으로 이동
      * 실패하면, 404시엔 회원가입 화면으로 이동 (TODO)
      * */
-    private suspend fun login(email: String) {
-        loginUseCase(email)
+    private suspend fun login(oAuthUser: OAuthUser) {
+        loginUseCase(oAuthUser.email)
             .onSuccess {
                 _sideEffect.send(LoginSideEffect.NavigateToHome)
             }
             .onFailure {
-                _sideEffect.send(LoginSideEffect.NavigateToRegister(email))
+                _sideEffect.send(LoginSideEffect.NavigateToRegister(oAuthUser))
             }
     }
 }

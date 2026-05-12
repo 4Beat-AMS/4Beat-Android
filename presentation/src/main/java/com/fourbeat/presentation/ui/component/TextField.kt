@@ -1,5 +1,8 @@
 package com.fourbeat.presentation.ui.component
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
@@ -7,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
@@ -24,7 +28,10 @@ import androidx.compose.ui.unit.dp
 import com.fourbeat.presentation.theme.Black
 import com.fourbeat.presentation.theme.Gray200
 import com.fourbeat.presentation.theme.Gray500
-import com.fourbeat.presentation.theme.Gray700
+import com.fourbeat.presentation.theme.PrimaryColor
+import com.fourbeat.presentation.theme.White
+import com.fourbeat.presentation.theme.contentPadding
+import com.fourbeat.presentation.theme.corderRadius
 import com.fourbeat.presentation.theme.normal16
 import com.fourbeat.presentation.theme.normal20
 
@@ -45,11 +52,7 @@ fun FourBeatTextField(
     val underlineColor = if (isFocused) Black else Gray200
 
     Column(modifier = modifier) {
-        Text(
-            text = label,
-            style = normal16,
-            color = Gray700,
-        )
+        FourBeatLabel(text = label)
         FourBeatSpacer(size = 12)
         BasicTextField(
             modifier = Modifier
@@ -95,6 +98,47 @@ fun FourBeatTextField(
         HorizontalDivider(
             modifier = Modifier.padding(top = 4.dp),
             color = underlineColor,
+        )
+    }
+}
+
+@Composable
+fun HashTagTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    maxLength: Int,
+    onValueChange: (String) -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = White,
+                shape = RoundedCornerShape(size = corderRadius)
+            )
+            .border(
+                border = BorderStroke(width = 2.dp, color = PrimaryColor),
+                shape = RoundedCornerShape(size = corderRadius),
+            )
+            .padding(all = contentPadding),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "#",
+            style = normal20,
+            color = Gray500,
+        )
+        FourBeatSpacer(size = 16)
+        BasicTextField(
+            modifier = Modifier.weight(1f),
+            value = value,
+            onValueChange = { if (it.length <= maxLength) onValueChange(it) },
+            textStyle = normal20,
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                imeAction = ImeAction.Done,
+            ),
         )
     }
 }

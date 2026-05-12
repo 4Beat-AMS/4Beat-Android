@@ -2,6 +2,8 @@ package com.fourbeat.data.datasource.di
 
 import com.fourbeat.data.datasource.auth.AuthDataSource
 import com.fourbeat.data.datasource.auth.AuthRemoteDataSource
+import com.fourbeat.data.datasource.group.GroupDataSource
+import com.fourbeat.data.datasource.group.GroupRemoteDataSource
 import com.fourbeat.data.datasource.user.UserDataSource
 import com.fourbeat.data.datasource.user.UserRemoteDataSource
 import dagger.Binds
@@ -17,4 +19,7 @@ internal interface DataSourceModule {
 
     @Binds
     fun bindsUserDataSource(impl: UserRemoteDataSource): UserDataSource
+
+    @Binds
+    fun bindsGroupDataSource(impl: GroupRemoteDataSource): GroupDataSource
 }
