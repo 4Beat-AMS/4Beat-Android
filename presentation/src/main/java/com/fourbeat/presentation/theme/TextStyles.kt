@@ -25,3 +25,7 @@ val normal16 = TextStyle(
     fontSize = 16.sp,
     fontWeight = FontWeight.Normal
 )
+val normal14= TextStyle(
+    fontSize = 14.sp,
+    fontWeight = FontWeight.Normal
+)

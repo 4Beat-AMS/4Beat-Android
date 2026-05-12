@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -74,6 +75,7 @@ private fun CreateGroupScreen(
                 label = "방 이름",
                 placeholder = "방 이름을 알려주세요",
                 maxLength = CreateGroupUiState.NAME_MAX_LENGTH,
+                imeAction = ImeAction.Done,
                 onValueChange = { value -> onEvent(CreateGroupEvent.OnNameChanged(value)) }
             )
             Column(

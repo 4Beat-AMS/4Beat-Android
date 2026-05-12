@@ -1,5 +1,6 @@
 package com.fourbeat.presentation.ui.main.home
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -17,7 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fourbeat.presentation.theme.Gray200
+import com.fourbeat.presentation.theme.Gray500
+import com.fourbeat.presentation.theme.bold18
 import com.fourbeat.presentation.theme.contentPadding
+import com.fourbeat.presentation.theme.corderRadius
+import com.fourbeat.presentation.theme.normal14
 import com.fourbeat.presentation.ui.component.ErrorComponent
 import com.fourbeat.presentation.ui.component.HomeTopBar
 import com.fourbeat.presentation.ui.component.LoadingComponent
@@ -112,11 +119,26 @@ private fun HomeGroupItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(all = 20.dp),
+            .border(
+                width = 0.5.dp,
+                color = Gray200,
+                shape = RoundedCornerShape(size = corderRadius)
+            )
+            .padding(
+                horizontal = 20.dp,
+                vertical = 36.dp
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(text = name)
-        Text(text = capacity)
+        Text(
+            text = name,
+            style = bold18
+        )
+        Text(
+            text = capacity,
+            color = Gray500,
+            style = normal14,
+        )
     }
 }
