@@ -1,11 +1,23 @@
 package com.fourbeat.presentation.ui.main.home
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fourbeat.presentation.theme.contentPadding
 import com.fourbeat.presentation.ui.component.ErrorComponent
 import com.fourbeat.presentation.ui.component.HomeTopBar
 import com.fourbeat.presentation.ui.component.LoadingComponent
@@ -51,7 +63,60 @@ private fun HomeScreen(
         when (uiState) {
             HomeUiState.Loading -> LoadingComponent()
             HomeUiState.Error -> ErrorComponent(onRefresh = { onEvent(HomeEvent.OnRefresh) })
-            is HomeUiState.Success -> Unit
+            is HomeUiState.Success -> Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(all = contentPadding)
+            ) {
+                HomeGroupList(
+                    uiState = uiState,
+                    onEvent = onEvent
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun HomeGroupList(
+    modifier: Modifier = Modifier,
+    uiState: HomeUiState.Success,
+    onEvent: (HomeEvent) -> Unit,
+) {
+    val scrollState = rememberScrollState()
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .verticalScroll(state = scrollState),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        uiState.groups.fastForEach { group ->
+            HomeGroupItem(
+                name = group.name,
+                capacity = group.capacity,
+                onClick = { onEvent(HomeEvent.OnGroupItemClicked(group.id)) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeGroupItem(
+    modifier: Modifier = Modifier,
+    name: String,
+    capacity: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(all = 20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(text = name)
+        Text(text = capacity)
     }
 }
