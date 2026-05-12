@@ -9,8 +9,13 @@ data class RegisterUiState(
 ) : Validatable {
     override val isValid: Boolean
         get() = isLoading.not() &&
-                name.length in 1..10 &&
-                nickname.length in 1..10
+                name.length in 1..NAME_MAX_LENGTH &&
+                nickname.length in 1..NICKNAME_MAX_LENGTH
+
+    companion object {
+        const val NAME_MAX_LENGTH = 10
+        const val NICKNAME_MAX_LENGTH = 10
+    }
 }
 
 sealed interface RegisterEvent {
