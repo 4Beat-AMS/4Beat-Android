@@ -18,7 +18,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getMyGroupsUseCase: GetMyGroupsUseCase,
 ) : ViewModel() {
-    var uiState by mutableStateOf(HomeUiState())
+    var uiState by mutableStateOf<HomeUiState>(HomeUiState.Loading)
         private set
 
     private val _sideEffect = Channel<HomeSideEffect>()
@@ -43,13 +43,14 @@ class HomeViewModel @Inject constructor(
      * */
     private fun loadMyGroups() {
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
+            uiState = HomeUiState.Loading
             getMyGroupsUseCase()
                 .onSuccess { groups ->
-                    uiState = uiState.copy(groups = groups.map(Group::toUiModel))
+                    uiState = HomeUiState.Success(groups.map(Group::toUiModel))
                 }
-                .onFailure { }
-            uiState = uiState.copy(isLoading = false)
+                .onFailure {
+                    uiState = HomeUiState.Error
+                }
         }
     }
 
