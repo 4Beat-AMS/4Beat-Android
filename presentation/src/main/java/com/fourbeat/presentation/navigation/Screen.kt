@@ -7,7 +7,7 @@ sealed interface AuthScreen {
     data object Login : AuthScreen
 
     @Serializable
-    data class Register(val email: String) : AuthScreen
+    data class Register(val email: String, val nickname: String?) : AuthScreen
 }
 
 sealed interface MainScreen {
