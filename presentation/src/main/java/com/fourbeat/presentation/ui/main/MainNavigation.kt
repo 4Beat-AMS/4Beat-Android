@@ -18,7 +18,7 @@ import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
 fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
     val navController = appState.naveController
 
-    navigation<ScreenGraph.Main>(startDestination = MainScreen.Home) {
+    navigation<ScreenGraph.Main>(startDestination = MainScreen.SelectSong(1)) {
         composable<MainScreen.Home> {
             HomeRoute(
                 navigateToCreateGroup = navController::navigateToCreateGroup,
@@ -47,7 +47,10 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
             ShareGroupCodeRoute()
         }
         composable<MainScreen.SelectSong> {
-            SelectSongRoute()
+            SelectSongRoute(
+                navigateToCreatePost = navController::navigateToCreatePost,
+                navigateToBack = navController::popBackStack,
+            )
         }
         composable<MainScreen.CreatePost> {
 
