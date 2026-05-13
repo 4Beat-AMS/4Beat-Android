@@ -26,6 +26,8 @@ android {
             load(project.rootProject.file("local.properties").inputStream())
         }
         buildConfigField("String", "BASE_URL", properties.getProperty("BASE_URL"))
+        buildConfigField("String", "SPOTIFY_CLIENT_ID", properties.getProperty("SPOTIFY_CLIENT_ID"))
+        buildConfigField("String", "SPOTIFY_CLIENT_SECRET", properties.getProperty("SPOTIFY_CLIENT_SECRET"))
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
