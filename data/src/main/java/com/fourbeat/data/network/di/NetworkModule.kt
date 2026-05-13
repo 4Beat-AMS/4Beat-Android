@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -18,7 +19,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Singleton
@@ -67,10 +67,15 @@ internal object NetworkModule {
             defaultRequest {
                 url(BuildConfig.BASE_URL)
                 contentType(ContentType.Application.Json)
-                runBlocking {
-                    header("Authorization", preferenceRepository.uidFlow.first())
-                }
             }
+            install(
+                createClientPlugin("AuthorizationPlugin") {
+                    onRequest { request, _ ->
+                        val uid = preferenceRepository.uidFlow.first()
+                        request.header("Authorization", uid)
+                    }
+                }
+            )
         }
 
     @Provides
