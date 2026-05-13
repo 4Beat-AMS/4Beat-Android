@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface MediaRepository {
     fun getSongMetaFlow(): Flow<SongMeta?>
+    fun getLiveSongPermissionFlow(): Flow<Boolean>
 }

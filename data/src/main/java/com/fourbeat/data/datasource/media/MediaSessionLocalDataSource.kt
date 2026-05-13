@@ -6,6 +6,8 @@ import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
+import android.os.Handler
+import android.os.Looper
 import com.fourbeat.data.media.MediaMeta
 import com.fourbeat.data.media.MediaNotificationListenerService
 import kotlinx.coroutines.channels.awaitClose
@@ -20,6 +22,7 @@ class MediaSessionLocalDataSource(
     private val sessionManager: MediaSessionManager,
 ) : MediaSessionDataSource {
     override fun getMediaMetaFlow(): Flow<MediaMeta> = callbackFlow {
+        val mainHandler = Handler(Looper.getMainLooper())
         var currentController: MediaController? = null
 
         val mediaCallback = object : MediaController.Callback() {
@@ -33,12 +36,12 @@ class MediaSessionLocalDataSource(
                 it.playbackState?.state == PlaybackState.STATE_PLAYING
             } ?: controllers?.firstOrNull()
 
-            if (currentController?.packageName != activeController?.packageName) {
+            if (currentController?.sessionToken != activeController?.sessionToken) {
                 currentController?.unregisterCallback(mediaCallback)
                 currentController = activeController
 
                 activeController?.let { controller ->
-                    controller.registerCallback(mediaCallback)
+                    controller.registerCallback(mediaCallback, mainHandler)
                     controller.metadata?.let { trySend(it.toMeta()) }
                 }
             }
@@ -46,7 +49,11 @@ class MediaSessionLocalDataSource(
 
         val componentName = ComponentName(context, MediaNotificationListenerService::class.java)
         try {
-            sessionManager.addOnActiveSessionsChangedListener(sessionListener, componentName)
+            sessionManager.addOnActiveSessionsChangedListener(
+                sessionListener,
+                componentName,
+                mainHandler,
+            )
             val initialController = sessionManager
                 .getActiveSessions(componentName)
                 .let { controllers ->
@@ -55,11 +62,12 @@ class MediaSessionLocalDataSource(
                 }
             currentController = initialController
             initialController?.let {
-                it.registerCallback(mediaCallback)
+                it.registerCallback(mediaCallback, mainHandler)
                 it.metadata?.let { meta -> trySend(meta.toMeta()) }
             }
         } catch (e: SecurityException) {
             close(e)
+            return@callbackFlow
         }
 
         awaitClose {

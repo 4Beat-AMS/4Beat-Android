@@ -25,6 +25,7 @@ data class SelectSongUiState(
 
 sealed class LiveSongUiState {
     data object Loading : LiveSongUiState()
+    data object PermissionRequired : LiveSongUiState()
     data object None : LiveSongUiState()
     data class Live(val song: Song) : LiveSongUiState()
 }
@@ -33,9 +34,11 @@ sealed interface SelectSongEvent {
     data class OnSongItemToggled(val song: Song) : SelectSongEvent
     data object OnNextButtonClicked : SelectSongEvent
     data object OnBackIconClicked : SelectSongEvent
+    data object OnRequestPermissionClicked : SelectSongEvent
 }
 
 sealed interface SelectSongSideEffect {
     data class NavigateToCreatePost(val groupId: Long) : SelectSongSideEffect
     data object NavigateToBack : SelectSongSideEffect
+    data object OpenNotificationListenerSettings : SelectSongSideEffect
 }

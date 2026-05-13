@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetMediaSongFlow @Inject constructor(
+class GetMediaSongFlowUseCase @Inject constructor(
     private val mediaRepository: MediaRepository
 ) {
     operator fun invoke(): Flow<Song?> =

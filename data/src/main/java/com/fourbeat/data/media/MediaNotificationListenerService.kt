@@ -1,10 +1,8 @@
 package com.fourbeat.data.media
 
 import android.service.notification.NotificationListenerService
-import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
-@AndroidEntryPoint
 class MediaNotificationListenerService : NotificationListenerService() {
     override fun onListenerConnected() {
         super.onListenerConnected()

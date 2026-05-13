@@ -1,5 +1,7 @@
 package com.fourbeat.presentation.ui.main.selectsong
 
+import android.content.Intent
+import android.provider.Settings
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -47,12 +50,18 @@ fun SelectSongRoute(
     viewModel: SelectSongViewModel = hiltViewModel(),
 ) {
     val liveSongUiState by viewModel.liveSongFlow.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
                 is SelectSongSideEffect.NavigateToCreatePost -> navigateToCreatePost(effect.groupId)
                 SelectSongSideEffect.NavigateToBack -> navigateToBack()
+                SelectSongSideEffect.OpenNotificationListenerSettings -> {
+                    val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    context.startActivity(intent)
+                }
             }
         }
     }
@@ -91,6 +100,11 @@ private fun SelectSongScreen(
                     when (liveSongUiState) {
                         LiveSongUiState.Loading -> LiveSongLoading()
                         LiveSongUiState.None -> LiveSongNone()
+                        LiveSongUiState.PermissionRequired -> LiveSongPermissionRequired(
+                            onRequestPermission = {
+                                onEvent(SelectSongEvent.OnRequestPermissionClicked)
+                            },
+                        )
                         is LiveSongUiState.Live -> SelectSongItem(
                             song = liveSongUiState.song,
                             isSelected = uiState.selectedSong == liveSongUiState.song,
@@ -135,6 +149,45 @@ private fun LiveSongNone(modifier: Modifier = Modifier) {
             style = normal14,
             color = Gray500,
         )
+    }
+}
+
+@Composable
+private fun LiveSongPermissionRequired(
+    modifier: Modifier = Modifier,
+    onRequestPermission: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(160.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Text(
+                text = "실시간 곡 정보를 보려면, 알림 접근 권한이 필요해요",
+                style = normal14,
+                color = Gray500,
+            )
+            Text(
+                modifier = Modifier
+                    .border(
+                        border = BorderStroke(width = 1.dp, color = PrimaryColor),
+                        shape = RoundedCornerShape(corderRadius),
+                    )
+                    .noRippleClickable(onClick = onRequestPermission)
+                    .padding(
+                        horizontal = 16.dp,
+                        vertical = 8.dp,
+                    ),
+                text = "권한 설정",
+                style = normal14,
+                color = PrimaryColor,
+            )
+        }
     }
 }
 

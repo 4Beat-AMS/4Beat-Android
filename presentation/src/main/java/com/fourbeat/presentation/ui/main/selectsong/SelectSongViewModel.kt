@@ -8,36 +8,48 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.fourbeat.domain.model.post.Song
-import com.fourbeat.domain.usecase.media.GetMediaSongFlow
+import com.fourbeat.domain.usecase.media.GetLiveSongPermissionFlowUseCase
+import com.fourbeat.domain.usecase.media.GetMediaSongFlowUseCase
 import com.fourbeat.presentation.navigation.MainScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class SelectSongViewModel @Inject constructor(
-    getMediaSongFlow: GetMediaSongFlow,
+    getMediaSongFlowUseCase: GetMediaSongFlowUseCase,
+    getLiveSongPermissionFlowUseCase: GetLiveSongPermissionFlowUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val groupId = savedStateHandle.toRoute<MainScreen.SelectSong>().groupId
 
     val liveSongFlow: StateFlow<LiveSongUiState> =
-        getMediaSongFlow()
-            .map { song ->
-                Timber.i(song.toString())
-                if (song != null) {
-                    LiveSongUiState.Live(song)
+        getLiveSongPermissionFlowUseCase()
+            .flatMapLatest { granted ->
+                if (!granted) {
+                    flowOf(LiveSongUiState.PermissionRequired)
                 } else {
-                    LiveSongUiState.None
+                    getMediaSongFlowUseCase().map { song ->
+                        if (song != null) {
+                            LiveSongUiState.Live(song)
+                        } else {
+                            LiveSongUiState.None
+                        }
+                    }
                 }
             }
+            .catch { emit(LiveSongUiState.None) }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000L),
@@ -58,6 +70,9 @@ class SelectSongViewModel @Inject constructor(
             }
             SelectSongEvent.OnBackIconClicked -> viewModelScope.launch {
                 _sideEffect.send(SelectSongSideEffect.NavigateToBack)
+            }
+            SelectSongEvent.OnRequestPermissionClicked -> viewModelScope.launch {
+                _sideEffect.send(SelectSongSideEffect.OpenNotificationListenerSettings)
             }
         }
     }
