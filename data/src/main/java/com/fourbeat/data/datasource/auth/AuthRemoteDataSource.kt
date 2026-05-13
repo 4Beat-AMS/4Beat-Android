@@ -1,6 +1,6 @@
 package com.fourbeat.data.datasource.auth
 
-import com.fourbeat.data.network.di.DefaultNetwork
+import com.fourbeat.data.network.di.PublicNetwork
 import com.fourbeat.data.network.dto.auth.LoginRequestBody
 import com.fourbeat.data.network.dto.user.UserResponse
 import io.ktor.client.HttpClient
@@ -12,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AuthRemoteDataSource @Inject constructor(
-    @param:DefaultNetwork
+    @param:PublicNetwork
     private val client: HttpClient,
 ) : AuthDataSource {
     override suspend fun login(body: LoginRequestBody): UserResponse =

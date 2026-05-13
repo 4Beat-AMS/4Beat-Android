@@ -4,7 +4,11 @@ import javax.inject.Qualifier
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class DefaultNetwork
+annotation class PublicNetwork
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class PrivateNetwork
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)

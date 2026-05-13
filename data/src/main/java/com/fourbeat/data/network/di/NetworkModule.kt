@@ -39,7 +39,7 @@ internal object NetworkModule {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        Timber.tag("DEFAULT_NETWORK").i(message)
+                        Timber.tag("NETWORK").i(message)
                     }
                 }
                 level = LogLevel.BODY
@@ -48,8 +48,19 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    @DefaultNetwork
-    fun provideDefaultHttpClient(
+    @PublicNetwork
+    fun providePublicHttpClient(): HttpClient =
+        createKtorClient().config {
+            defaultRequest {
+                url(BuildConfig.BASE_URL)
+                contentType(ContentType.Application.Json)
+            }
+        }
+
+    @Provides
+    @Singleton
+    @PrivateNetwork
+    fun providePrivateHttpClient(
         preferenceRepository: PreferenceRepository,
     ): HttpClient =
         createKtorClient().config {
@@ -60,21 +71,6 @@ internal object NetworkModule {
                     header("Authorization", preferenceRepository.uidFlow.first())
                 }
             }
-            /*install(Auth) {
-                bearer {
-                    loadTokens {
-                        preferenceRepository
-                            .uidFlow.first()?.let { uid ->
-                                BearerTokens(uid.toString(), "")
-                            }
-                    }
-                    sendWithoutRequest { request ->
-                        val path = request.url.encodedPath
-                        val shouldNotRequest = path.contains("login") || path.contains("register")
-                        shouldNotRequest.not()
-                    }
-                }
-            }*/
         }
 
     @Provides
