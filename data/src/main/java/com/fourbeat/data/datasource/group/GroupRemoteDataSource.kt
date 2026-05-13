@@ -42,6 +42,6 @@ class GroupRemoteDataSource @Inject constructor(
 
     override suspend fun getGroupPostStatus(groupId: Long): MyPostStatusResponse =
         client
-            .get("groups/$groupId/post/status")
+            .get("groups/$groupId/posts/status")
             .body()
 }

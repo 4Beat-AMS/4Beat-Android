@@ -15,7 +15,7 @@ fun Group.toUiModel(): GroupUiModel =
 
 fun MyPostStatus.toUiModel(): MyPostStatusUiModel =
     MyPostStatusUiModel(
-        status = if (canPost) {
+        message = if (canPost) {
             "오늘 ${totalPostLimit}회 중에 ${remainingPostCount}회 남았어요"
         } else {
             "오늘 ${totalPostLimit}회의 할당량을 모두 소진했어요"

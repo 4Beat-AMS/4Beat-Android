@@ -9,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.fourbeat.domain.model.group.Group
 import com.fourbeat.domain.usecase.group.GetGroupInfoUseCase
+import com.fourbeat.domain.usecase.group.GetGroupPostStatusUseCase
 import com.fourbeat.presentation.mapper.toUiModel
+import com.fourbeat.presentation.model.common.MessageCollector
 import com.fourbeat.presentation.model.group.GroupUiModel
 import com.fourbeat.presentation.navigation.MainScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,6 +23,7 @@ import javax.inject.Inject
 @HiltViewModel
 class GroupDetailHeaderViewModel @Inject constructor(
     private val getGroupInfoUseCase: GetGroupInfoUseCase,
+    private val getGroupPostStatusUseCase: GetGroupPostStatusUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
     private val groupId = savedStateHandle.toRoute<MainScreen.GroupDetail>().groupId
@@ -37,9 +40,7 @@ class GroupDetailHeaderViewModel @Inject constructor(
 
     fun onEvent(event: GroupDetailHeaderEvent) {
         when (event) {
-            is GroupDetailHeaderEvent.OnPlusIconClicked -> viewModelScope.launch {
-                _sideEffect.send(GroupDetailHeaderSideEffect.NavigateToSelectSong(groupId))
-            }
+            is GroupDetailHeaderEvent.OnPlusIconClicked -> navigateToSelectSongIfCanPost()
             is GroupDetailHeaderEvent.OnHashIconClicked -> viewModelScope.launch {
                 _sideEffect.send(GroupDetailHeaderSideEffect.ShowGroupCodeDialog(uiState.group.code))
             }
@@ -56,6 +57,20 @@ class GroupDetailHeaderViewModel @Inject constructor(
             getGroupInfoUseCase(groupId)
                 .onSuccess { group ->
                     uiState = uiState.copy(group = group.let(Group::toUiModel))
+                }
+                .onFailure { }
+        }
+    }
+
+    private fun navigateToSelectSongIfCanPost() {
+        viewModelScope.launch {
+            getGroupPostStatusUseCase(groupId)
+                .onSuccess {
+                    val status = it.toUiModel()
+                    MessageCollector.sendMessage(status.message)
+                    if (status.canPost) {
+                        _sideEffect.send(GroupDetailHeaderSideEffect.NavigateToSelectSong(groupId))
+                    }
                 }
                 .onFailure { }
         }
