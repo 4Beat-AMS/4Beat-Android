@@ -20,6 +20,7 @@ serialization = "1.11.0"
 coroutines = "1.11.0"
 timber = "5.0.1"
 kakao = "2.23.2"
+coil = "3.1.0"
 datastorePreferences = "1.2.1"
 
 [libraries]
@@ -55,8 +56,14 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 kakao-login = { group = "com.kakao.sdk", name = "v2-user", version.ref = "kakao" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coil" }
 
 [bundles]
+coil = [
+    "coil-compose",
+    "coil-network-okhttp",
+]
 ktor = [
     "ktor-client-core",
     "ktor-client-okhttp",
