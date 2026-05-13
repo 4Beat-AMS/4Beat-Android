@@ -13,6 +13,7 @@ import com.fourbeat.presentation.ui.main.groupdetail.GroupDetailRoute
 import com.fourbeat.presentation.ui.main.home.HomeRoute
 import com.fourbeat.presentation.ui.main.joingroup.JoinGroupRoute
 import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
+import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
 
 fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
     val navController = appState.naveController
@@ -43,7 +44,7 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
             )
         }
         dialog<MainScreen.ShareGroupCodeDialog> {
-
+            ShareGroupCodeRoute()
         }
         composable<MainScreen.SelectSong> {
             SelectSongRoute()

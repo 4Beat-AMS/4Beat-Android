@@ -107,6 +107,7 @@ fun HashTagTextField(
     modifier: Modifier = Modifier,
     value: String,
     maxLength: Int,
+    enabled: Boolean = true,
     onValueChange: (String) -> Unit,
 ) {
     Row(
@@ -135,6 +136,7 @@ fun HashTagTextField(
             onValueChange = { if (it.length <= maxLength) onValueChange(it) },
             textStyle = normal20,
             singleLine = true,
+            enabled = enabled,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Done,
