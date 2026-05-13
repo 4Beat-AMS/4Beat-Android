@@ -72,7 +72,7 @@ internal object NetworkModule {
                 createClientPlugin("AuthorizationPlugin") {
                     onRequest { request, _ ->
                         val uid = preferenceRepository.uidFlow.first()
-                        request.header("Authorization", uid)
+                        request.header("X-USER-ID", uid)
                     }
                 }
             )

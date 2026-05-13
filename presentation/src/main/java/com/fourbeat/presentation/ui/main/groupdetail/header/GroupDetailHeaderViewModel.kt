@@ -38,10 +38,10 @@ class GroupDetailHeaderViewModel @Inject constructor(
     fun onEvent(event: GroupDetailHeaderEvent) {
         when (event) {
             is GroupDetailHeaderEvent.OnPlusIconClicked -> viewModelScope.launch {
-                _sideEffect.send(GroupDetailHeaderSideEffect.NavigateToCreatePost)
+                _sideEffect.send(GroupDetailHeaderSideEffect.NavigateToSelectSong(groupId))
             }
             is GroupDetailHeaderEvent.OnHashIconClicked -> viewModelScope.launch {
-                _sideEffect.send(GroupDetailHeaderSideEffect.ShowGroupCodeDialog)
+                _sideEffect.send(GroupDetailHeaderSideEffect.ShowGroupCodeDialog(uiState.group.code))
             }
         }
     }

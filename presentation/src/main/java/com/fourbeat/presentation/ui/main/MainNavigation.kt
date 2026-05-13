@@ -12,6 +12,7 @@ import com.fourbeat.presentation.ui.main.creategroup.CreateGroupRoute
 import com.fourbeat.presentation.ui.main.groupdetail.GroupDetailRoute
 import com.fourbeat.presentation.ui.main.home.HomeRoute
 import com.fourbeat.presentation.ui.main.joingroup.JoinGroupRoute
+import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
 
 fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
     val navController = appState.naveController
@@ -37,9 +38,18 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
         }
         composable<MainScreen.GroupDetail> {
             GroupDetailRoute(
-                navigateToCreatePost = { },
-                showGroupCodeDialog = { },
+                navigateToSelectSong = navController::navigateToSelectSong,
+                showGroupCodeDialog = navController::navigateToShareGroupCodeDialog,
             )
+        }
+        dialog<MainScreen.ShareGroupCodeDialog> {
+
+        }
+        composable<MainScreen.SelectSong> {
+            SelectSongRoute()
+        }
+        composable<MainScreen.CreatePost> {
+
         }
     }
 }
@@ -55,3 +65,10 @@ fun NavController.navigateToJoinGroupDialog() = navigate(MainScreen.JoinGroupDia
 fun NavController.navigateToGroupDetail(groupId: Long) = navigate(MainScreen.GroupDetail(groupId)) {
     popUpTo(MainScreen.Home) { inclusive = false }
 }
+
+fun NavController.navigateToShareGroupCodeDialog(code: String) =
+    navigate(MainScreen.ShareGroupCodeDialog(code))
+
+fun NavController.navigateToSelectSong(groupId: Long) = navigate(MainScreen.SelectSong(groupId))
+
+fun NavController.navigateToCreatePost(groupId: Long) = navigate(MainScreen.CreatePost(groupId))
