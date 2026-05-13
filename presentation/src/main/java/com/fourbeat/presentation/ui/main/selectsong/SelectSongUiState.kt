@@ -23,6 +23,12 @@ data class SelectSongUiState(
         }
 }
 
+sealed class LiveSongUiState {
+    data object Loading : LiveSongUiState()
+    data object None : LiveSongUiState()
+    data class Live(val song: Song) : LiveSongUiState()
+}
+
 sealed interface SelectSongEvent {
     data class OnSongItemToggled(val song: Song) : SelectSongEvent
     data object OnNextButtonClicked : SelectSongEvent

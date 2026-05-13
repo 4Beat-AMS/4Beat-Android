@@ -2,10 +2,12 @@ package com.fourbeat.data.repository.di
 
 import com.fourbeat.data.repository.AuthRepositoryImpl
 import com.fourbeat.data.repository.GroupRepositoryImpl
+import com.fourbeat.data.repository.MediaRepositoryImpl
 import com.fourbeat.data.repository.PreferenceRepositoryImpl
 import com.fourbeat.data.repository.UserRepositoryImpl
 import com.fourbeat.domain.repository.AuthRepository
 import com.fourbeat.domain.repository.GroupRepository
+import com.fourbeat.domain.repository.MediaRepository
 import com.fourbeat.domain.repository.PreferenceRepository
 import com.fourbeat.domain.repository.UserRepository
 import dagger.Binds
@@ -27,4 +29,7 @@ internal interface DataModule {
 
     @Binds
     fun bindsGroupRepository(impl: GroupRepositoryImpl): GroupRepository
+
+    @Binds
+    fun bindsMediaRepository(impl: MediaRepositoryImpl): MediaRepository
 }

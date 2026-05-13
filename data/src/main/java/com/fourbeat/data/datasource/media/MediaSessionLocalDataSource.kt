@@ -11,6 +11,7 @@ import com.fourbeat.data.media.MediaNotificationListenerService
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import javax.inject.Singleton
 
 @Singleton
@@ -18,28 +19,44 @@ class MediaSessionLocalDataSource(
     private val context: Context,
     private val sessionManager: MediaSessionManager,
 ) : MediaSessionDataSource {
-    override fun getMediaMetaStream(): Flow<MediaMeta> = callbackFlow {
+    override fun getMediaMetaFlow(): Flow<MediaMeta> = callbackFlow {
+        var currentController: MediaController? = null
+
         val mediaCallback = object : MediaController.Callback() {
             override fun onMetadataChanged(metadata: MediaMetadata?) {
                 metadata?.let { trySend(it.toMeta()) }
             }
         }
+
         val sessionListener = MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
-            val activeController = controllers?.find { controller ->
-                controller.playbackState?.state == PlaybackState.STATE_PLAYING
+            val activeController = controllers?.find {
+                it.playbackState?.state == PlaybackState.STATE_PLAYING
             } ?: controllers?.firstOrNull()
 
-            activeController?.let { controller ->
-                controller.registerCallback(mediaCallback)
-                controller.metadata?.let { trySend(it.toMeta()) }
+            if (currentController?.packageName != activeController?.packageName) {
+                currentController?.unregisterCallback(mediaCallback)
+                currentController = activeController
+
+                activeController?.let { controller ->
+                    controller.registerCallback(mediaCallback)
+                    controller.metadata?.let { trySend(it.toMeta()) }
+                }
             }
         }
+
         val componentName = ComponentName(context, MediaNotificationListenerService::class.java)
         try {
             sessionManager.addOnActiveSessionsChangedListener(sessionListener, componentName)
-            val initialControllers = sessionManager.getActiveSessions(componentName)
-            initialControllers.firstOrNull()?.let { controller ->
-                controller.metadata?.let { trySend(it.toMeta()) }
+            val initialController = sessionManager
+                .getActiveSessions(componentName)
+                .let { controllers ->
+                    controllers.find { it.playbackState?.state == PlaybackState.STATE_PLAYING }
+                        ?: controllers.firstOrNull()
+                }
+            currentController = initialController
+            initialController?.let {
+                it.registerCallback(mediaCallback)
+                it.metadata?.let { meta -> trySend(meta.toMeta()) }
             }
         } catch (e: SecurityException) {
             close(e)
@@ -47,8 +64,11 @@ class MediaSessionLocalDataSource(
 
         awaitClose {
             sessionManager.removeOnActiveSessionsChangedListener(sessionListener)
+            currentController?.unregisterCallback(mediaCallback)
+            currentController = null
         }
     }
+        .distinctUntilChanged()
 
     private fun MediaMetadata.toMeta(): MediaMeta =
         MediaMeta(

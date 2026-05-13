@@ -8,18 +8,22 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fourbeat.domain.model.post.Song
 import com.fourbeat.presentation.theme.Gray200
 import com.fourbeat.presentation.theme.Gray500
@@ -42,6 +46,8 @@ fun SelectSongRoute(
     navigateToBack: () -> Unit,
     viewModel: SelectSongViewModel = hiltViewModel(),
 ) {
+    val liveSongUiState by viewModel.liveSongFlow.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
@@ -54,6 +60,7 @@ fun SelectSongRoute(
     SelectSongScreen(
         modifier = modifier,
         uiState = viewModel.uiState,
+        liveSongUiState = liveSongUiState,
         onEvent = viewModel::onEvent,
     )
 }
@@ -62,6 +69,7 @@ fun SelectSongRoute(
 private fun SelectSongScreen(
     modifier: Modifier = Modifier,
     uiState: SelectSongUiState,
+    liveSongUiState: LiveSongUiState,
     onEvent: (SelectSongEvent) -> Unit,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -79,17 +87,16 @@ private fun SelectSongScreen(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    val song = Song(
-                        title = "Rude",
-                        artist = "하츠투하츠",
-                        albumImageUrl = "https://cdnimg.melon.co.kr/cm2/album/images/128/69/629/12869629_20260219143819_1000.jpg?87c9804de11c3f88a1aa6194e1291395"
-                    )
                     FourBeatLabel(text = "실시간")
-                    SelectSongItem(
-                        song = song,
-                        isSelected = uiState.selectedSong == song,
-                        onSelect = { onEvent(SelectSongEvent.OnSongItemToggled(song)) }
-                    )
+                    when (liveSongUiState) {
+                        LiveSongUiState.Loading -> LiveSongLoading()
+                        LiveSongUiState.None -> LiveSongNone()
+                        is LiveSongUiState.Live -> SelectSongItem(
+                            song = liveSongUiState.song,
+                            isSelected = uiState.selectedSong == liveSongUiState.song,
+                            onSelect = { onEvent(SelectSongEvent.OnSongItemToggled(liveSongUiState.song)) }
+                        )
+                    }
                 }
             }
             FourBeatButton(
@@ -100,6 +107,34 @@ private fun SelectSongScreen(
                 onClick = { onEvent(SelectSongEvent.OnNextButtonClicked) },
             )
         }
+    }
+}
+
+@Composable
+private fun LiveSongLoading(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun LiveSongNone(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(80.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "실시간 노래 정보가 없어요",
+            style = normal14,
+            color = Gray500,
+        )
     }
 }
 
@@ -116,7 +151,7 @@ fun SelectSongItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp),
+            .height(80.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         NetworkImage(
