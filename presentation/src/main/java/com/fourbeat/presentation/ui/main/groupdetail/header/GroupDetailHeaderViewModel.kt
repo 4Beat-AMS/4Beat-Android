@@ -10,6 +10,7 @@ import androidx.navigation.toRoute
 import com.fourbeat.domain.model.group.Group
 import com.fourbeat.domain.usecase.group.GetGroupInfoUseCase
 import com.fourbeat.domain.usecase.group.GetGroupPostStatusUseCase
+import com.fourbeat.presentation.mapper.toMessage
 import com.fourbeat.presentation.mapper.toUiModel
 import com.fourbeat.presentation.model.common.MessageCollector
 import com.fourbeat.presentation.model.group.GroupUiModel
@@ -65,9 +66,8 @@ class GroupDetailHeaderViewModel @Inject constructor(
     private fun navigateToSelectSongIfCanPost() {
         viewModelScope.launch {
             getGroupPostStatusUseCase(groupId)
-                .onSuccess {
-                    val status = it.toUiModel()
-                    MessageCollector.sendMessage(status.message)
+                .onSuccess { status ->
+                    MessageCollector.sendMessage(status.toMessage())
                     if (status.canPost) {
                         _sideEffect.send(GroupDetailHeaderSideEffect.NavigateToSelectSong(groupId))
                     }
