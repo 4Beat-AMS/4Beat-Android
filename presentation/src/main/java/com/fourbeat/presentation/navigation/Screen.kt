@@ -30,5 +30,10 @@ sealed interface MainScreen {
     data class SelectSong(val groupId: Long)
 
     @Serializable
-    data class CreatePost(val groupId: Long)
+    data class CreatePost(
+        val groupId: Long,
+        val songTitle: String,
+        val songArtist: String,
+        val songImageUrl: String?,
+    )
 }

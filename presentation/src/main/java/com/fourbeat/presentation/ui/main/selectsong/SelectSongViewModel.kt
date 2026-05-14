@@ -92,8 +92,12 @@ class SelectSongViewModel @Inject constructor(
             is SelectSongEvent.OnSearchQueryChanged -> _uiState.update {
                 it.copy(searchQuery = event.query)
             }
-            SelectSongEvent.OnNextButtonClicked -> viewModelScope.launch {
-                _sideEffect.send(SelectSongSideEffect.NavigateToCreatePost(groupId))
+            SelectSongEvent.OnNextButtonClicked -> {
+                if (!uiState.value.isValid) return
+                val song = uiState.value.selectedSong!!
+                viewModelScope.launch {
+                    _sideEffect.send(SelectSongSideEffect.NavigateToCreatePost(groupId, song))
+                }
             }
             SelectSongEvent.OnBackIconClicked -> viewModelScope.launch {
                 _sideEffect.send(SelectSongSideEffect.NavigateToBack)

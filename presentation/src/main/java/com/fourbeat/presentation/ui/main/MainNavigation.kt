@@ -12,6 +12,7 @@ import com.fourbeat.presentation.ui.main.creategroup.CreateGroupRoute
 import com.fourbeat.presentation.ui.main.groupdetail.GroupDetailRoute
 import com.fourbeat.presentation.ui.main.home.HomeRoute
 import com.fourbeat.presentation.ui.main.joingroup.JoinGroupRoute
+import com.fourbeat.domain.model.post.Song
 import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
 import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
 
@@ -48,7 +49,7 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
         }
         composable<MainScreen.SelectSong> {
             SelectSongRoute(
-                navigateToCreatePost = navController::navigateToCreatePost,
+                navigateToCreatePost = { groupId, song -> navController.navigateToCreatePost(groupId, song) },
                 navigateToBack = navController::popBackStack,
             )
         }
@@ -75,4 +76,11 @@ fun NavController.navigateToShareGroupCodeDialog(code: String) =
 
 fun NavController.navigateToSelectSong(groupId: Long) = navigate(MainScreen.SelectSong(groupId))
 
-fun NavController.navigateToCreatePost(groupId: Long) = navigate(MainScreen.CreatePost(groupId))
+fun NavController.navigateToCreatePost(groupId: Long, song: Song) = navigate(
+    MainScreen.CreatePost(
+        groupId = groupId,
+        songTitle = song.title,
+        songArtist = song.artist,
+        songImageUrl = song.albumImageUrl,
+    )
+)
