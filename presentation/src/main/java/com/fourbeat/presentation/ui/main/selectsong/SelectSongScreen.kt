@@ -7,12 +7,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -27,6 +29,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.fourbeat.domain.model.post.Song
 import com.fourbeat.presentation.theme.Gray200
 import com.fourbeat.presentation.theme.Gray500
@@ -39,6 +44,7 @@ import com.fourbeat.presentation.ui.component.FourBeatButton
 import com.fourbeat.presentation.ui.component.FourBeatLabel
 import com.fourbeat.presentation.ui.component.FourBeatSpacer
 import com.fourbeat.presentation.ui.component.NetworkImage
+import com.fourbeat.presentation.ui.component.SearchTextField
 import com.fourbeat.presentation.ui.component.TitleTopBar
 import com.fourbeat.presentation.ui.util.noRippleClickable
 
@@ -50,6 +56,7 @@ fun SelectSongRoute(
     viewModel: SelectSongViewModel = hiltViewModel(),
 ) {
     val liveSongUiState by viewModel.liveSongFlow.collectAsStateWithLifecycle()
+    val searchSongs = viewModel.songPagingFlow.collectAsLazyPagingItems()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -70,6 +77,7 @@ fun SelectSongRoute(
         modifier = modifier,
         uiState = viewModel.uiState,
         liveSongUiState = liveSongUiState,
+        searchSongs = searchSongs,
         onEvent = viewModel::onEvent,
     )
 }
@@ -79,6 +87,7 @@ private fun SelectSongScreen(
     modifier: Modifier = Modifier,
     uiState: SelectSongUiState,
     liveSongUiState: LiveSongUiState,
+    searchSongs: LazyPagingItems<Song>,
     onEvent: (SelectSongEvent) -> Unit,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -89,14 +98,28 @@ private fun SelectSongScreen(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-                .padding(contentPadding),
+                .fillMaxWidth(),
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    FourBeatLabel(text = "실시간")
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = contentPadding,
+                    end = contentPadding,
+                    bottom = 100.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                stickyHeader {
+                    SearchTextField(
+                        value = uiState.searchQuery,
+                        placeholder = "spotify에서 제목으로 찾아봐",
+                        onValueChange = { value ->
+                            onEvent(SelectSongEvent.OnSearchQueryChanged(value))
+                        },
+                    )
+                }
+                item { FourBeatLabel(text = "실시간") }
+                item {
                     when (liveSongUiState) {
                         LiveSongUiState.Loading -> LiveSongLoading()
                         LiveSongUiState.None -> LiveSongNone()
@@ -106,15 +129,45 @@ private fun SelectSongScreen(
                             },
                         )
                         is LiveSongUiState.Live -> SelectSongItem(
+                            modifier = Modifier.fillMaxWidth(),
                             song = liveSongUiState.song,
                             isSelected = uiState.selectedSong == liveSongUiState.song,
-                            onSelect = { onEvent(SelectSongEvent.OnSongItemToggled(liveSongUiState.song)) }
+                            onSelect = { onEvent(SelectSongEvent.OnSongItemToggled(liveSongUiState.song)) },
                         )
+                    }
+                }
+                if (uiState.searchQuery.isNotBlank()) {
+                    item { FourBeatLabel(text = "검색 결과") }
+                    items(
+                        count = searchSongs.itemCount,
+                    ) { index ->
+                        searchSongs[index]?.let { song ->
+                            SelectSongItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                song = song,
+                                isSelected = uiState.selectedSong == song,
+                                onSelect = { onEvent(SelectSongEvent.OnSongItemToggled(song)) },
+                            )
+                        }
+                    }
+                    if (searchSongs.loadState.append is LoadState.Loading) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
                     }
                 }
             }
             FourBeatButton(
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(contentPadding),
                 isLoading = false,
                 enabled = uiState.isValid,
                 text = uiState.buttonText,
@@ -202,9 +255,7 @@ fun SelectSongItem(
     val buttonTextColor = if (isSelected) PrimaryColor else Gray500
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(80.dp),
+        modifier = modifier.height(80.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         NetworkImage(
@@ -237,7 +288,7 @@ fun SelectSongItem(
                 .noRippleClickable(onClick = onSelect)
                 .padding(
                     horizontal = 16.dp,
-                    vertical = 8.dp
+                    vertical = 8.dp,
                 ),
             text = "고르기",
             style = normal14,

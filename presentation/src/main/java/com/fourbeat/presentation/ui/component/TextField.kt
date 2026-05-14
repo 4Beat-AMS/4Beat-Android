@@ -13,7 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +29,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.fourbeat.presentation.theme.Black
+import com.fourbeat.presentation.theme.Gray100
 import com.fourbeat.presentation.theme.Gray200
 import com.fourbeat.presentation.theme.Gray500
 import com.fourbeat.presentation.theme.PrimaryColor
@@ -100,6 +104,58 @@ fun FourBeatTextField(
             color = underlineColor,
         )
     }
+}
+
+@Composable
+fun SearchTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+) {
+    BasicTextField(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                color = Gray100,
+                shape = RoundedCornerShape(size = corderRadius),
+            )
+            .border(
+                border = BorderStroke(width = 0.5.dp, color = Gray200),
+                shape = RoundedCornerShape(size = corderRadius),
+            )
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        value = value,
+        onValueChange = onValueChange,
+        textStyle = normal16,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Search,
+        ),
+        decorationBox = { innerTextField ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null,
+                    tint = Gray500,
+                )
+                FourBeatSpacer(size = 8)
+                Box {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = normal16,
+                            color = Gray500,
+                        )
+                    }
+                    innerTextField()
+                }
+            }
+        },
+    )
 }
 
 @Composable

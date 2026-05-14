@@ -5,6 +5,7 @@ import com.fourbeat.presentation.model.common.Validatable
 
 data class SelectSongUiState(
     val selectedSong: Song? = null,
+    val searchQuery: String = "",
 ) : Validatable {
     override val isValid: Boolean
         get() = selectedSong != null
@@ -32,6 +33,7 @@ sealed class LiveSongUiState {
 
 sealed interface SelectSongEvent {
     data class OnSongItemToggled(val song: Song) : SelectSongEvent
+    data class OnSearchQueryChanged(val query: String) : SelectSongEvent
     data object OnNextButtonClicked : SelectSongEvent
     data object OnBackIconClicked : SelectSongEvent
     data object OnRequestPermissionClicked : SelectSongEvent
