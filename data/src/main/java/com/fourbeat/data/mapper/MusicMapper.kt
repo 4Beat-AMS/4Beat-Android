@@ -11,5 +11,5 @@ fun SpotifyTrackItemResponse.toDomain(): Song =
     Song(
         title = name,
         artist = artists.firstOrNull()?.name ?: "Unknown Artist",
-        albumImageUrl = album.images.firstOrNull()?.url ?: "",
+        albumImageUrl = album.images.firstOrNull()?.url ?: "", // TODO: 기본 이미지 url 추가
     )
