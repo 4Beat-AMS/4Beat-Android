@@ -22,4 +22,13 @@ sealed interface MainScreen {
 
     @Serializable
     data class GroupDetail(val groupId: Long)
+
+    @Serializable
+    data class ShareGroupCodeDialog(val code: String) : MainScreen
+
+    @Serializable
+    data class SelectSong(val groupId: Long)
+
+    @Serializable
+    data class CreatePost(val groupId: Long)
 }

@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -18,7 +19,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import timber.log.Timber
 import javax.inject.Singleton
@@ -39,7 +39,7 @@ internal object NetworkModule {
             install(Logging) {
                 logger = object : Logger {
                     override fun log(message: String) {
-                        Timber.tag("DEFAULT_NETWORK").i(message)
+                        Timber.tag("NETWORK").i(message)
                     }
                 }
                 level = LogLevel.BODY
@@ -48,33 +48,34 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    @DefaultNetwork
-    fun provideDefaultHttpClient(
+    @PublicNetwork
+    fun providePublicHttpClient(): HttpClient =
+        createKtorClient().config {
+            defaultRequest {
+                url(BuildConfig.BASE_URL)
+                contentType(ContentType.Application.Json)
+            }
+        }
+
+    @Provides
+    @Singleton
+    @PrivateNetwork
+    fun providePrivateHttpClient(
         preferenceRepository: PreferenceRepository,
     ): HttpClient =
         createKtorClient().config {
             defaultRequest {
                 url(BuildConfig.BASE_URL)
                 contentType(ContentType.Application.Json)
-                runBlocking {
-                    header("Authorization", preferenceRepository.uidFlow.first())
-                }
             }
-            /*install(Auth) {
-                bearer {
-                    loadTokens {
-                        preferenceRepository
-                            .uidFlow.first()?.let { uid ->
-                                BearerTokens(uid.toString(), "")
-                            }
-                    }
-                    sendWithoutRequest { request ->
-                        val path = request.url.encodedPath
-                        val shouldNotRequest = path.contains("login") || path.contains("register")
-                        shouldNotRequest.not()
+            install(
+                createClientPlugin("AuthorizationPlugin") {
+                    onRequest { request, _ ->
+                        val uid = preferenceRepository.uidFlow.first()
+                        request.header("X-USER-ID", uid)
                     }
                 }
-            }*/
+            )
         }
 
     @Provides

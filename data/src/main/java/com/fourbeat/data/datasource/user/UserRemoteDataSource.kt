@@ -1,6 +1,6 @@
 package com.fourbeat.data.datasource.user
 
-import com.fourbeat.data.network.di.DefaultNetwork
+import com.fourbeat.data.network.di.PublicNetwork
 import com.fourbeat.data.network.dto.user.RegisterRequestBody
 import com.fourbeat.data.network.dto.user.UserResponse
 import io.ktor.client.HttpClient
@@ -12,7 +12,7 @@ import javax.inject.Singleton
 
 @Singleton
 class UserRemoteDataSource @Inject constructor(
-    @param:DefaultNetwork
+    @param:PublicNetwork
     private val client: HttpClient,
 ) : UserDataSource {
     override suspend fun register(body: RegisterRequestBody): UserResponse =

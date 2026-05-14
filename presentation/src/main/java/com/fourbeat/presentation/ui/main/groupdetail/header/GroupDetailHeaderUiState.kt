@@ -12,6 +12,6 @@ sealed interface GroupDetailHeaderEvent {
 }
 
 sealed interface GroupDetailHeaderSideEffect {
-    data object NavigateToCreatePost : GroupDetailHeaderSideEffect
-    data object ShowGroupCodeDialog : GroupDetailHeaderSideEffect
+    data class NavigateToSelectSong(val groupId: Long) : GroupDetailHeaderSideEffect
+    data class ShowGroupCodeDialog(val code: String) : GroupDetailHeaderSideEffect
 }

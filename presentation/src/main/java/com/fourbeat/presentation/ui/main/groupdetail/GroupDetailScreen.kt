@@ -9,12 +9,12 @@ import com.fourbeat.presentation.ui.main.groupdetail.header.GroupDetailHeader
 @Composable
 fun GroupDetailRoute(
     modifier: Modifier = Modifier,
-    navigateToCreatePost: () -> Unit,
-    showGroupCodeDialog: () -> Unit,
+    navigateToSelectSong: (Long) -> Unit,
+    showGroupCodeDialog: (String) -> Unit,
 ) {
     GroupDetailScreen(
         modifier = modifier,
-        navigateToCreatePost = navigateToCreatePost,
+        navigateToSelectSong = navigateToSelectSong,
         showGroupCodeDialog = showGroupCodeDialog
     )
 }
@@ -22,14 +22,14 @@ fun GroupDetailRoute(
 @Composable
 private fun GroupDetailScreen(
     modifier: Modifier,
-    navigateToCreatePost: () -> Unit,
-    showGroupCodeDialog: () -> Unit,
+    navigateToSelectSong: (Long) -> Unit,
+    showGroupCodeDialog: (String) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxSize()
     ) {
         GroupDetailHeader(
-            navigateToCreatePost = navigateToCreatePost,
+            navigateToSelectSong = navigateToSelectSong,
             showGroupCodeDialog = showGroupCodeDialog,
         )
     }

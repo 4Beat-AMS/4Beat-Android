@@ -26,15 +26,15 @@ import com.fourbeat.presentation.ui.component.FourBeatSpacer
 @Composable
 fun GroupDetailHeader(
     modifier: Modifier = Modifier,
-    navigateToCreatePost: () -> Unit,
-    showGroupCodeDialog: () -> Unit,
+    navigateToSelectSong: (Long) -> Unit,
+    showGroupCodeDialog: (String) -> Unit,
     viewModel: GroupDetailHeaderViewModel = hiltViewModel(),
 ) {
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                GroupDetailHeaderSideEffect.NavigateToCreatePost -> navigateToCreatePost()
-                GroupDetailHeaderSideEffect.ShowGroupCodeDialog -> showGroupCodeDialog()
+                is GroupDetailHeaderSideEffect.NavigateToSelectSong -> navigateToSelectSong(effect.groupId)
+                is GroupDetailHeaderSideEffect.ShowGroupCodeDialog -> showGroupCodeDialog(effect.code)
             }
         }
     }

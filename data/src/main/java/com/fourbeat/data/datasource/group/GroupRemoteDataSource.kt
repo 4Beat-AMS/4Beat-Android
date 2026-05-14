@@ -1,6 +1,6 @@
 package com.fourbeat.data.datasource.group
 
-import com.fourbeat.data.network.di.DefaultNetwork
+import com.fourbeat.data.network.di.PrivateNetwork
 import com.fourbeat.data.network.dto.group.CreateGroupRequestBody
 import com.fourbeat.data.network.dto.group.GroupResponse
 import com.fourbeat.data.network.dto.group.MyPostStatusResponse
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class GroupRemoteDataSource @Inject constructor(
-    @param:DefaultNetwork
+    @param:PrivateNetwork
     private val client: HttpClient,
 ) : GroupDataSource {
     override suspend fun createGroup(body: CreateGroupRequestBody): GroupResponse =
@@ -42,6 +42,6 @@ class GroupRemoteDataSource @Inject constructor(
 
     override suspend fun getGroupPostStatus(groupId: Long): MyPostStatusResponse =
         client
-            .get("groups/$groupId/post/status")
+            .get("groups/$groupId/posts/status")
             .body()
 }

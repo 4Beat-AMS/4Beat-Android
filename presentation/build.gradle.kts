@@ -63,4 +63,10 @@ dependencies {
 
     // kakao
     implementation(libs.kakao.login)
+
+    // coil
+    implementation(libs.bundles.coil)
+
+    // paging
+    implementation(libs.bundles.paging)
 }
