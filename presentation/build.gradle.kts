@@ -66,4 +66,7 @@ dependencies {
 
     // coil
     implementation(libs.bundles.coil)
+
+    // paging
+    implementation(libs.bundles.paging)
 }
