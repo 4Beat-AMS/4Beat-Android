@@ -211,7 +211,7 @@ fun SelectSongItem(
             modifier = Modifier
                 .size(56.dp)
                 .clip(RoundedCornerShape(4.dp)),
-            url = song.albumImageUrl,
+            url = song.albumImageUrl ?: "", // TODO: 기본 이미지 url 넣기
         )
         FourBeatSpacer(size = 12)
         Column(

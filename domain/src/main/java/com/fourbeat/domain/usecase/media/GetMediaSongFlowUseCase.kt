@@ -19,15 +19,14 @@ class GetMediaSongFlowUseCase @Inject constructor(
                     Song(
                         title = it.title,
                         artist = it.artist,
-                        albumImageUrl = it.albumImageUrl ?: run {
-                            getFirstMatchedSong(it.title)?.albumImageUrl ?: ""
-                        }
+                        albumImageUrl = it.albumImageUrl
+                            ?: getFirstMatchedSong(it.title)?.albumImageUrl
                     )
                 }
             }
 
     private suspend fun getFirstMatchedSong(title: String): Song? {
-        val candidateList = searchSongsUseCase(query = title, limit = 20)
+        val candidateList = searchSongsUseCase(query = title, limit = 10)
             .getOrNull() ?: return null
         return candidateList.getOrNull(0)
     }
