@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -22,25 +23,37 @@ import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
-class CameraViewModel @Inject constructor() : ViewModel() {
+class CameraViewModel @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+) : ViewModel() {
+
     var uiState by mutableStateOf(CameraUiState())
         private set
 
     private val _sideEffect = Channel<CameraSideEffect>()
     val sideEffect = _sideEffect.receiveAsFlow()
 
+    private var videoCapture: VideoCapture<Recorder>? = null
     private var recording: Recording? = null
     private var countdownJob: Job? = null
+
+    fun bindVideoCapture(capture: VideoCapture<Recorder>) {
+        videoCapture = capture
+    }
 
     fun onEvent(event: CameraEvent) {
         when (event) {
             CameraEvent.OnRecordButtonClicked -> {
                 if (uiState.isRecording) stopRecording()
+                else videoCapture?.let { startRecording(it) }
+            }
+            CameraEvent.OnCameraFlipClicked -> {
+                uiState = uiState.copy(isFrontCamera = !uiState.isFrontCamera)
             }
         }
     }
 
-    fun startRecording(videoCapture: VideoCapture<Recorder>, context: Context) {
+    private fun startRecording(videoCapture: VideoCapture<Recorder>) {
         val outputFile = File(context.cacheDir, "video_4beat_${System.currentTimeMillis()}.mp4")
         recording = videoCapture.output
             .prepareRecording(context, FileOutputOptions.Builder(outputFile).build())
@@ -53,7 +66,6 @@ class CameraViewModel @Inject constructor() : ViewModel() {
                     }
                 }
             }
-
         uiState = uiState.copy(isRecording = true)
         startCountdown()
     }

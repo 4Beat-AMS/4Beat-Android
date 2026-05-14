@@ -19,6 +19,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,9 +72,10 @@ fun CameraRoute(
             it.setSurfaceProvider { request -> surfaceRequest = request }
         }
     }
+    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
 
     LaunchedEffect(Unit) {
-        val cameraProvider = suspendCancellableCoroutine<ProcessCameraProvider> { cont ->
+        cameraProvider = suspendCancellableCoroutine { cont ->
             val future = ProcessCameraProvider.getInstance(context)
             future.addListener(
                 {
@@ -82,13 +86,21 @@ fun CameraRoute(
             )
             cont.invokeOnCancellation { future.cancel(true) }
         }
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(
-            lifecycleOwner,
-            CameraSelector.DEFAULT_BACK_CAMERA,
-            preview,
-            videoCapture,
-        )
+    }
+
+    LaunchedEffect(videoCapture) {
+        viewModel.bindVideoCapture(videoCapture)
+    }
+
+    LaunchedEffect(cameraProvider, viewModel.uiState.isFrontCamera) {
+        val provider = cameraProvider ?: return@LaunchedEffect
+        val selector = if (viewModel.uiState.isFrontCamera) {
+            CameraSelector.DEFAULT_FRONT_CAMERA
+        } else {
+            CameraSelector.DEFAULT_BACK_CAMERA
+        }
+        provider.unbindAll()
+        provider.bindToLifecycle(lifecycleOwner, selector, preview, videoCapture)
     }
 
     LaunchedEffect(Unit) {
@@ -102,13 +114,7 @@ fun CameraRoute(
     CameraScreen(
         uiState = viewModel.uiState,
         surfaceRequest = surfaceRequest,
-        onRecordButtonClicked = {
-            if (viewModel.uiState.isRecording.not()) {
-                viewModel.startRecording(videoCapture, context)
-            } else {
-                viewModel.onEvent(CameraEvent.OnRecordButtonClicked)
-            }
-        },
+        onEvent = viewModel::onEvent,
     )
 }
 
@@ -116,7 +122,7 @@ fun CameraRoute(
 private fun CameraScreen(
     uiState: CameraUiState,
     surfaceRequest: SurfaceRequest?,
-    onRecordButtonClicked: () -> Unit,
+    onEvent: (CameraEvent) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -143,8 +149,21 @@ private fun CameraScreen(
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 48.dp),
             isRecording = uiState.isRecording,
-            onClick = onRecordButtonClicked,
+            onClick = { onEvent(CameraEvent.OnRecordButtonClicked) },
         )
+        IconButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 48.dp, end = 24.dp),
+            onClick = { onEvent(CameraEvent.OnCameraFlipClicked) },
+            enabled = !uiState.isRecording,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = null,
+                tint = Color.White,
+            )
+        }
     }
 }
 
