@@ -72,4 +72,7 @@ dependencies {
 
     // cameraX
     implementation(libs.bundles.camera)
+
+    // exoplayer
+    implementation(libs.bundles.media3)
 }
