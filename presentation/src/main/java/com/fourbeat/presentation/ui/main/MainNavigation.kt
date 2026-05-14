@@ -13,6 +13,7 @@ import com.fourbeat.presentation.ui.main.groupdetail.GroupDetailRoute
 import com.fourbeat.presentation.ui.main.home.HomeRoute
 import com.fourbeat.presentation.ui.main.joingroup.JoinGroupRoute
 import com.fourbeat.domain.model.post.Song
+import com.fourbeat.presentation.ui.main.camera.CameraRoute
 import com.fourbeat.presentation.ui.main.createpost.CreatePostRoute
 import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
 import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
@@ -59,7 +60,18 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
                 navigateToGroupDetail = {
                     navController.popBackStack<MainScreen.GroupDetail>(inclusive = false)
                 },
+                navigateToCamera = navController::navigateToCamera,
                 navigateToBack = navController::popBackStack,
+            )
+        }
+        composable<MainScreen.Camera> {
+            CameraRoute(
+                navigateBack = { filePath ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("videoFilePath", filePath)
+                    navController.popBackStack()
+                },
             )
         }
     }
@@ -81,6 +93,8 @@ fun NavController.navigateToShareGroupCodeDialog(code: String) =
     navigate(MainScreen.ShareGroupCodeDialog(code))
 
 fun NavController.navigateToSelectSong(groupId: Long) = navigate(MainScreen.SelectSong(groupId))
+
+fun NavController.navigateToCamera() = navigate(MainScreen.Camera)
 
 fun NavController.navigateToCreatePost(groupId: Long, song: Song) = navigate(
     MainScreen.CreatePost(

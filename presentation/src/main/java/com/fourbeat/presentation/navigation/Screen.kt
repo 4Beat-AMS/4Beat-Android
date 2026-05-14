@@ -36,4 +36,7 @@ sealed interface MainScreen {
         val songArtist: String,
         val songImageUrl: String?,
     )
+
+    @Serializable
+    data object Camera : MainScreen
 }
