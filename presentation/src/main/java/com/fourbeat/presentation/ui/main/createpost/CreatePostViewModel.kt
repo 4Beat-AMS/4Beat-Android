@@ -34,7 +34,7 @@ class CreatePostViewModel @Inject constructor(
         albumImageUrl = route.songImageUrl,
     )
 
-    var uiState by mutableStateOf(CreatePostUiState())
+    var uiState by mutableStateOf(CreatePostUiState(song = song))
         private set
 
     private val _sideEffect = Channel<CreatePostSideEffect>()
@@ -54,7 +54,7 @@ class CreatePostViewModel @Inject constructor(
             CreatePostEvent.OnBackClicked -> viewModelScope.launch {
                 _sideEffect.send(CreatePostSideEffect.NavigateToBack)
             }
-            CreatePostEvent.OnVideoBoxClicked -> viewModelScope.launch {
+            CreatePostEvent.OnVideoShotClicked -> viewModelScope.launch {
                 _sideEffect.send(CreatePostSideEffect.CheckCameraPermission)
             }
             is CreatePostEvent.OnCameraPermissionResult -> {

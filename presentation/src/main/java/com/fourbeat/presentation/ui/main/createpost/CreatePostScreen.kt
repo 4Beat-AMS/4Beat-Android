@@ -1,9 +1,44 @@
 package com.fourbeat.presentation.ui.main.createpost
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.fourbeat.domain.model.post.Song
+import com.fourbeat.presentation.theme.Gray100
+import com.fourbeat.presentation.theme.Gray500
+import com.fourbeat.presentation.theme.PrimaryColor
+import com.fourbeat.presentation.theme.bold14
+import com.fourbeat.presentation.theme.bold18
+import com.fourbeat.presentation.theme.contentPadding
+import com.fourbeat.presentation.theme.corderRadius
+import com.fourbeat.presentation.theme.normal14
+import com.fourbeat.presentation.ui.component.FourBeatButton
+import com.fourbeat.presentation.ui.component.FourBeatLabel
+import com.fourbeat.presentation.ui.component.FourBeatTextArea
+import com.fourbeat.presentation.ui.component.NetworkImage
+import com.fourbeat.presentation.ui.component.TitleTopBar
+import com.fourbeat.presentation.ui.util.noRippleClickable
+import java.io.File
 
 @Composable
 fun CreatePostRoute(
@@ -36,5 +71,149 @@ private fun CreatePostScreen(
     uiState: CreatePostUiState,
     onEvent: (CreatePostEvent) -> Unit,
 ) {
+    Column(modifier = modifier.fillMaxSize()) {
+        TitleTopBar(
+            title = "한 박자 올리기",
+            onBack = { onEvent(CreatePostEvent.OnBackClicked) },
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = contentPadding),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = PrimaryColor.copy(alpha = 0.1f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(all = 12.dp),
+                text = uiState.announce,
+                color = PrimaryColor,
+                style = bold14
+            )
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FourBeatLabel(text = "노래")
+                SongInfoItem(song = uiState.song)
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FourBeatLabel(text = "영상")
+                VideoArea(
+                    videoFile = uiState.videoFile,
+                    onVideoBoxClicked = { onEvent(CreatePostEvent.OnVideoShotClicked) },
+                    onVideoDeleted = { onEvent(CreatePostEvent.OnVideoDeleted) },
+                )
+            }
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FourBeatLabel(text = "코멘트")
+                    Text(
+                        text = uiState.commentLimit,
+                        color = Gray500,
+                        style = normal14
+                    )
+                }
+                FourBeatTextArea(
+                    value = uiState.comment,
+                    placeholder = "감상을 작성해봐",
+                    maxLength = CreatePostUiState.COMMENT_MAX_LENGTH,
+                    onValueChange = { onEvent(CreatePostEvent.OnCommentChanged(it)) },
+                )
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            FourBeatButton(
+                isLoading = uiState.isLoading,
+                enabled = uiState.isLoading.not(),
+                text = "올리기",
+                onClick = { onEvent(CreatePostEvent.OnUploadClicked) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SongInfoItem(
+    modifier: Modifier = Modifier,
+    song: Song,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        NetworkImage(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(4.dp)),
+            url = song.albumImageUrl ?: "",
+        )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(text = song.title, style = bold18)
+            Text(text = song.artist, style = normal14, color = Gray500)
+        }
+    }
+}
+
+@Composable
+private fun VideoArea(
+    modifier: Modifier = Modifier,
+    videoFile: File?,
+    onVideoBoxClicked: () -> Unit,
+    onVideoDeleted: () -> Unit,
+) {
+    if (videoFile != null) {
+        VideoPreview(
+            modifier = modifier,
+            videoFile = videoFile,
+            onVideoDeleted = onVideoDeleted,
+        )
+    } else {
+        VideoEmpty(
+            modifier = modifier,
+            onVideoBoxClicked = onVideoBoxClicked,
+        )
+    }
+}
+
+@Composable
+private fun VideoEmpty(
+    modifier: Modifier = Modifier,
+    onVideoBoxClicked: () -> Unit,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .background(color = Gray100, shape = RoundedCornerShape(corderRadius))
+            .noRippleClickable(onClick = onVideoBoxClicked),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.PlayArrow,
+            contentDescription = "ic-play",
+            tint = Gray500
+        )
+    }
+}
+
+@Composable
+private fun VideoPreview(
+    modifier: Modifier = Modifier,
+    videoFile: File,
+    onVideoDeleted: () -> Unit,
+) {
 
 }
+

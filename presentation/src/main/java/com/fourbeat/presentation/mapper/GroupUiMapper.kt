@@ -20,4 +20,4 @@ fun MyPostStatus.toMessage(): String =
     }
 
 fun MyPostStatus.toAnnounce(): String =
-    "오늘은 ${remainingPostCount}번 더 올릴 수 있어"
+    "· 오늘은 ${remainingPostCount}번 더 올릴 수 있어"
