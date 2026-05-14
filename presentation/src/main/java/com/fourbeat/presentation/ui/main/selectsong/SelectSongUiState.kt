@@ -13,10 +13,9 @@ data class SelectSongUiState(
     val buttonText: String
         get() = if (isValid) {
             val title = selectedSong!!.title
-            val titleEllipsis = if (title.length >= 10) {
-                "${title.take(8)}.."
-            } else {
-                title
+            val titleEllipsis = when {
+                title.length >= 12 -> "${title.take(10)}.."
+                else -> title
             }
             "'${titleEllipsis}'로 계속하기"
         } else {

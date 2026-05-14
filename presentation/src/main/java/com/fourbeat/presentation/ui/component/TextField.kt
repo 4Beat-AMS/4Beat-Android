@@ -131,7 +131,7 @@ fun SearchTextField(
         singleLine = true,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Text,
-            imeAction = ImeAction.Search,
+            imeAction = ImeAction.Done,
         ),
         decorationBox = { innerTextField ->
             Row(
@@ -139,7 +139,7 @@ fun SearchTextField(
             ) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = "ic-search",
                     tint = Gray500,
                 )
                 FourBeatSpacer(size = 8)

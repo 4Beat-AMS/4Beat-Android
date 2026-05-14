@@ -55,6 +55,7 @@ fun SelectSongRoute(
     navigateToBack: () -> Unit,
     viewModel: SelectSongViewModel = hiltViewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val liveSongUiState by viewModel.liveSongFlow.collectAsStateWithLifecycle()
     val searchSongs = viewModel.songPagingFlow.collectAsLazyPagingItems()
     val context = LocalContext.current
@@ -75,7 +76,7 @@ fun SelectSongRoute(
 
     SelectSongScreen(
         modifier = modifier,
-        uiState = viewModel.uiState,
+        uiState = uiState,
         liveSongUiState = liveSongUiState,
         searchSongs = searchSongs,
         onEvent = viewModel::onEvent,
@@ -112,7 +113,7 @@ private fun SelectSongScreen(
                 stickyHeader {
                     SearchTextField(
                         value = uiState.searchQuery,
-                        placeholder = "spotify에서 제목으로 찾아봐",
+                        placeholder = "제목이나 가수로 찾아봐",
                         onValueChange = { value ->
                             onEvent(SelectSongEvent.OnSearchQueryChanged(value))
                         },
