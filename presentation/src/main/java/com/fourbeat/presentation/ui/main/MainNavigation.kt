@@ -13,6 +13,7 @@ import com.fourbeat.presentation.ui.main.groupdetail.GroupDetailRoute
 import com.fourbeat.presentation.ui.main.home.HomeRoute
 import com.fourbeat.presentation.ui.main.joingroup.JoinGroupRoute
 import com.fourbeat.domain.model.post.Song
+import com.fourbeat.presentation.ui.main.createpost.CreatePostRoute
 import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
 import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
 
@@ -54,7 +55,12 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
             )
         }
         composable<MainScreen.CreatePost> {
-
+            CreatePostRoute(
+                navigateToGroupDetail = {
+                    navController.popBackStack<MainScreen.GroupDetail>(inclusive = false)
+                },
+                navigateToBack = navController::popBackStack,
+            )
         }
     }
 }

@@ -10,6 +10,7 @@ data class CreatePostUiState(
 )
 
 sealed interface CreatePostEvent {
+    data object OnBackClicked : CreatePostEvent
     data object OnVideoBoxClicked : CreatePostEvent
     data class OnCameraPermissionResult(val granted: Boolean) : CreatePostEvent
     data class OnVideoFileSelected(val file: File) : CreatePostEvent
@@ -19,7 +20,8 @@ sealed interface CreatePostEvent {
 }
 
 sealed interface CreatePostSideEffect {
+    data object NavigateToBack : CreatePostSideEffect
     data object CheckCameraPermission : CreatePostSideEffect
     data object NavigateToCamera : CreatePostSideEffect
-    data class NavigateToGroupDetail(val groupId: Long) : CreatePostSideEffect
+    data object NavigateToGroupDetail : CreatePostSideEffect
 }

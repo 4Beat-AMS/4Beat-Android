@@ -14,6 +14,7 @@ import com.fourbeat.domain.usecase.group.GetGroupPostStatusUseCase
 import com.fourbeat.presentation.mapper.toAnnounce
 import com.fourbeat.presentation.navigation.MainScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -41,14 +42,18 @@ class CreatePostViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            getGroupPostStatusUseCase(route.groupId).onSuccess { status ->
-                uiState = uiState.copy(announce = status.toAnnounce())
-            }
+            getGroupPostStatusUseCase(route.groupId)
+                .onSuccess { status ->
+                    uiState = uiState.copy(announce = status.toAnnounce())
+                }
         }
     }
 
     fun onEvent(event: CreatePostEvent) {
         when (event) {
+            CreatePostEvent.OnBackClicked -> viewModelScope.launch {
+                _sideEffect.send(CreatePostSideEffect.NavigateToBack)
+            }
             CreatePostEvent.OnVideoBoxClicked -> viewModelScope.launch {
                 _sideEffect.send(CreatePostSideEffect.CheckCameraPermission)
             }
@@ -58,7 +63,11 @@ class CreatePostViewModel @Inject constructor(
                 }
             }
             is CreatePostEvent.OnVideoFileSelected -> uiState = uiState.copy(videoFile = event.file)
-            CreatePostEvent.OnVideoDeleted -> uiState = uiState.copy(videoFile = null)
+            CreatePostEvent.OnVideoDeleted -> {
+                val file = uiState.videoFile
+                uiState = uiState.copy(videoFile = null)
+                viewModelScope.launch(Dispatchers.IO) { file?.delete() }
+            }
             is CreatePostEvent.OnCommentChanged -> uiState = uiState.copy(comment = event.comment)
             CreatePostEvent.OnUploadClicked -> upload()
         }
@@ -75,7 +84,7 @@ class CreatePostViewModel @Inject constructor(
                     videoFile = uiState.videoFile,
                 ),
             ).onSuccess {
-                _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail(route.groupId))
+                _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail)
             }.onFailure {
                 uiState = uiState.copy(isLoading = false)
             }
