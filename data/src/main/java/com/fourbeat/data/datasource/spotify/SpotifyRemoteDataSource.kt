@@ -8,10 +8,10 @@ import com.fourbeat.data.network.dto.music.SpotifyTrackResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
-import io.ktor.client.request.forms.submitForm
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.parameters
 import javax.inject.Inject
@@ -22,6 +22,7 @@ class SpotifyRemoteDataSource @Inject constructor(
     @param:SpotifyNetwork
     private val client: HttpClient,
 ) : SpotifyDataSource {
+
     private var accessToken: String? = null
     private var tokenExpiresAt: Long = 0L
 
@@ -46,28 +47,38 @@ class SpotifyRemoteDataSource @Inject constructor(
         return response.accessToken
     }
 
-    override suspend fun searchTracks(
+    override suspend fun searchTracksPage(
         query: String,
         limit: Int,
-        offset: Int,
+        nextUrl: String?,
     ): SpotifyTrackResponse {
         val token = getValidAccessToken()
         return try {
-            fetchTracks(token, query, limit, offset)
+            if (nextUrl != null) fetchTracksByUrl(token, nextUrl)
+            else fetchTracks(token, query, limit)
         } catch (e: ClientRequestException) {
             if (e.response.status == HttpStatusCode.Unauthorized) {
-                fetchTracks(fetchAndCacheToken(), query, limit, offset)
+                val newToken = fetchAndCacheToken()
+                if (nextUrl != null) fetchTracksByUrl(newToken, nextUrl)
+                else fetchTracks(newToken, query, limit)
             } else {
                 throw e
             }
         }
     }
 
+    private suspend fun fetchTracksByUrl(
+        accessToken: String,
+        url: String,
+    ): SpotifyTrackResponse =
+        client.get(url) {
+            header("Authorization", "Bearer $accessToken")
+        }.body<SpotifySearchResponse>().tracks
+
     private suspend fun fetchTracks(
         accessToken: String,
         query: String,
         limit: Int,
-        offset: Int,
     ): SpotifyTrackResponse =
         client.get(SEARCH_URL) {
             header("Authorization", "Bearer $accessToken")
@@ -75,7 +86,6 @@ class SpotifyRemoteDataSource @Inject constructor(
             parameter("type", "track")
             parameter("market", "KR")
             parameter("limit", limit)
-            parameter("offset", offset)
         }.body<SpotifySearchResponse>().tracks
 
     companion object {
