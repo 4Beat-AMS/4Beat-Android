@@ -63,6 +63,11 @@ class GroupDetailHeaderViewModel @Inject constructor(
         }
     }
 
+    /*
+    * 그룹 내 나의 게시글 상태 보기
+    * canPost일 때, 음악 선택 화면으로 이동
+    * canPost 아닐 때, 메세지 전송
+    * */
     private fun navigateToSelectSongIfCanPost() {
         viewModelScope.launch {
             getGroupPostStatusUseCase(groupId)

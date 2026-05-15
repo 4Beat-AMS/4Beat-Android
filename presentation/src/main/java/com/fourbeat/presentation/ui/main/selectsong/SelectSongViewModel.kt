@@ -48,6 +48,14 @@ class SelectSongViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(SelectSongUiState())
     val uiState: StateFlow<SelectSongUiState> = _uiState.asStateFlow()
 
+    /*
+    * 실시간 노래 정보
+    * 1. 시스템 알림창 접근 권한 flow flatMapLatest로 최신 값 확인
+    * 2. 권한이 없을 때, PermissionRequired 상태
+    * 3. 권한이 있으면, MediaSongFlow 매핑
+    * 4. song 정보에 따라 Live, None 상태
+    * 5. stateIn WhileSubscribed로 화면에서 벗어난 5초 후면 collect 취소 (자원 해제)
+    * */
     val liveSongFlow: StateFlow<LiveSongUiState> =
         getLiveSongPermissionFlowUseCase()
             .flatMapLatest { granted ->
@@ -67,11 +75,18 @@ class SelectSongViewModel @Inject constructor(
                 initialValue = LiveSongUiState.Loading,
             )
 
+    /*
+    * Spotify 노래 검색 페이징 데이터
+    * 1. 작성된 검색 쿼리가 바뀔 때 emit, debounce로 바뀐 지 0.3초 후 emit
+    * 2. 쿼리가 빈 값이면 필터링
+    * 3. flatMapLatest로 최신 값 emit -> Pager로 페이징 데이터 제공
+    * 4. viewModelScope에 캐싱
+    * */
     val songPagingFlow: Flow<PagingData<Song>> =
         _uiState
             .map { it.searchQuery }
             .distinctUntilChanged()
-            .debounce(500L)
+            .debounce(300L)
             .filter { it.isNotBlank() }
             .flatMapLatest { query ->
                 Pager(

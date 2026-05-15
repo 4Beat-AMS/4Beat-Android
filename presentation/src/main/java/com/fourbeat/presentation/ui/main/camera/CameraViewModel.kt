@@ -64,6 +64,15 @@ class CameraViewModel @Inject constructor(
         )
     }
 
+    /*
+    * 영상 촬영 시작
+    * 1. 저장될 videoFile 생성
+    * 2. 촬영이 시작되면, isRecording=true, 타이머 시작
+    * 3. 촬영이 끝나면, 타이머 중지
+    * 4. 촬영 에러가 없으면, 생성된 File path 이전 화면으로 보냄
+    * 5. 에러가 있으면, 생성된 File 삭제 후 메세지 전송 (TODO)
+    * 6. Recording 객체 자원 해체 및 상태 초기화
+    * */
     private fun startRecording() {
         val capture = videoCapture ?: return
 
@@ -105,6 +114,11 @@ class CameraViewModel @Inject constructor(
             }
     }
 
+    /**
+     * 타이머 Jop 시작
+     * 4초 동안 남은 시간 줄여가며 변경
+     * 끝나면 촬영 중지
+     * */
     private fun startCountdown() {
         countdownJob = viewModelScope.launch {
             repeat(CameraUiState.MAX_RECORDING_SECONDS) {
@@ -124,6 +138,9 @@ class CameraViewModel @Inject constructor(
         recording?.stop()
     }
 
+    /**
+     * ViewModel 메모리에서 해제될 때, 자원 해제
+     * */
     override fun onCleared() {
         stopCountDownJob()
         recording?.stop()

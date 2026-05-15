@@ -40,6 +40,10 @@ class CreatePostViewModel @Inject constructor(
     val sideEffect = _sideEffect.receiveAsFlow()
 
     init {
+        /*
+        * 그룹 내 나의 게시글 상태 보기
+        * 오늘 작성할 수 있는 게시글 개수 표시
+        * */
         viewModelScope.launch {
             getGroupPostStatusUseCase(route.groupId)
                 .onSuccess { status ->
@@ -72,6 +76,11 @@ class CreatePostViewModel @Inject constructor(
         }
     }
 
+    /*
+    * 게시글 작성
+    * 성공 시, 해당 그룹 상세 화면으로 이동
+    * 실패 시, (TODO)
+    * */
     private fun upload() {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)

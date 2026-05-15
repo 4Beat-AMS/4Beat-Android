@@ -47,6 +47,9 @@ fun CameraRoute(
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
+    /*
+    * 화면 가로 방향 고정
+    * */
     DisposableEffect(Unit) {
         val activity = context as? Activity
         val originalOrientation = activity?.requestedOrientation
@@ -73,6 +76,11 @@ fun CameraRoute(
         }
     }
 
+    /*
+    * 전면/후면 카메라, VideoCapture 변경될 때마다 트리거
+    * CamerProvider lifecycle에 바인딩
+    * UseCase: Preview (촬영 중인 화면 보기), videoCapture (영상 촬영)
+    * */
     LaunchedEffect(uiState.cameraLens, videoCapture) {
         val cameraProvider = cameraProviderFuture.get()
         val preview = Preview.Builder().build().apply {
