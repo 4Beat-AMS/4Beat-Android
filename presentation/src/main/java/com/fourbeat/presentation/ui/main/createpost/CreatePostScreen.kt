@@ -14,11 +14,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import android.net.Uri
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -44,6 +48,7 @@ import com.fourbeat.presentation.theme.normal14
 import com.fourbeat.presentation.ui.component.FourBeatButton
 import com.fourbeat.presentation.ui.component.FourBeatLabel
 import com.fourbeat.presentation.ui.component.FourBeatTextArea
+import com.fourbeat.presentation.ui.component.VideoPlayer
 import com.fourbeat.presentation.ui.component.NetworkImage
 import com.fourbeat.presentation.ui.component.TitleTopBar
 import com.fourbeat.presentation.ui.util.noRippleClickable
@@ -80,7 +85,13 @@ fun CreatePostRoute(
     LaunchedEffect(launchPermission) {
         if (launchPermission) {
             launchPermission = false
-            permissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+            val permissions = buildList {
+                add(Manifest.permission.CAMERA)
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                }
+            }.toTypedArray()
+            permissionLauncher.launch(permissions)
         }
     }
 
@@ -242,6 +253,26 @@ private fun VideoPreview(
     videoFile: File,
     onVideoDeleted: () -> Unit,
 ) {
-
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(corderRadius)),
+    ) {
+        VideoPlayer(
+            modifier = Modifier.fillMaxSize(),
+            videoUrl = Uri.fromFile(videoFile).toString(),
+        )
+        IconButton(
+            modifier = Modifier.align(Alignment.TopEnd),
+            onClick = onVideoDeleted,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = null,
+                tint = androidx.compose.ui.graphics.Color.White,
+            )
+        }
+    }
 }
 
