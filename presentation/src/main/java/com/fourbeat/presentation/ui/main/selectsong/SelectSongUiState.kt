@@ -39,7 +39,7 @@ sealed interface SelectSongEvent {
 }
 
 sealed interface SelectSongSideEffect {
-    data class NavigateToCreatePost(val groupId: Long) : SelectSongSideEffect
+    data class NavigateToCreatePost(val groupId: Long, val song: Song) : SelectSongSideEffect
     data object NavigateToBack : SelectSongSideEffect
     data object OpenNotificationListenerSettings : SelectSongSideEffect
 }

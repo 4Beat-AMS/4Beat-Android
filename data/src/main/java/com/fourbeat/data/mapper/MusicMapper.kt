@@ -5,9 +5,9 @@ import com.fourbeat.data.network.dto.music.SpotifyTrackResponse
 import com.fourbeat.domain.model.post.Song
 import com.fourbeat.domain.model.post.SongPage
 
-fun SpotifyTrackResponse.toSongPage(): SongPage =
+fun SpotifyTrackResponse.toDomain(): SongPage =
     SongPage(
-        songs = items.map { it.toDomain() },
+        songs = items.map(SpotifyTrackItemResponse::toDomain),
         nextUrl = next,
     )
 

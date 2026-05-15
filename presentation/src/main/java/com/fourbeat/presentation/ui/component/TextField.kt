@@ -8,6 +8,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -156,6 +157,44 @@ fun SearchTextField(
             }
         },
     )
+}
+
+@Composable
+fun FourBeatTextArea(
+    modifier: Modifier = Modifier,
+    value: String,
+    placeholder: String,
+    maxLength: Int,
+    onValueChange: (String) -> Unit,
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        BasicTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minHeight = 120.dp)
+                .background(
+                    color = Gray100,
+                    shape = RoundedCornerShape(size = corderRadius),
+                )
+                .border(
+                    border = BorderStroke(width = 1.dp, color = Gray200),
+                    shape = RoundedCornerShape(size = corderRadius),
+                )
+                .padding(all = contentPadding),
+            value = value,
+            onValueChange = { if (it.length <= maxLength) onValueChange(it) },
+            textStyle = normal16,
+            decorationBox = { innerTextField ->
+                Box {
+                    if (value.isEmpty()) {
+                        Text(text = placeholder, style = normal16, color = Gray500)
+                    }
+                    innerTextField()
+                }
+            },
+        )
+
+    }
 }
 
 @Composable

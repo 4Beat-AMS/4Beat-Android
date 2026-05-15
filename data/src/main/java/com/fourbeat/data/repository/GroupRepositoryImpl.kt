@@ -7,6 +7,8 @@ import com.fourbeat.data.network.dto.group.GroupResponse
 import com.fourbeat.domain.model.group.CreateGroupRequest
 import com.fourbeat.domain.model.group.Group
 import com.fourbeat.domain.model.group.MyPostStatus
+import com.fourbeat.domain.model.post.CreatePostRequest
+import com.fourbeat.domain.model.post.Post
 import com.fourbeat.domain.repository.GroupRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,4 +31,13 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun getGroupPostStatus(groupId: Long): MyPostStatus =
         groupDataSource.getGroupPostStatus(groupId).toDomain()
+
+    override suspend fun createPost(groupId: Long, request: CreatePostRequest): Post =
+        groupDataSource
+            .createPost(
+                groupId = groupId,
+                body = request.asBody(),
+                videoFile = request.videoFile,
+            )
+            .toDomain()
 }

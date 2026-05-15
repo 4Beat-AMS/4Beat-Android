@@ -51,7 +51,7 @@ import com.fourbeat.presentation.ui.util.noRippleClickable
 @Composable
 fun SelectSongRoute(
     modifier: Modifier = Modifier,
-    navigateToCreatePost: (Long) -> Unit,
+    navigateToCreatePost: (Long, Song) -> Unit,
     navigateToBack: () -> Unit,
     viewModel: SelectSongViewModel = hiltViewModel(),
 ) {
@@ -63,7 +63,7 @@ fun SelectSongRoute(
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                is SelectSongSideEffect.NavigateToCreatePost -> navigateToCreatePost(effect.groupId)
+                is SelectSongSideEffect.NavigateToCreatePost -> navigateToCreatePost(effect.groupId, effect.song)
                 SelectSongSideEffect.NavigateToBack -> navigateToBack()
                 SelectSongSideEffect.OpenNotificationListenerSettings -> {
                     val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)

@@ -69,4 +69,10 @@ dependencies {
 
     // paging
     implementation(libs.bundles.paging)
+
+    // cameraX
+    implementation(libs.bundles.camera)
+
+    // exoplayer
+    implementation(libs.bundles.media3)
 }

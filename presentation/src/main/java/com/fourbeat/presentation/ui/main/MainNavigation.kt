@@ -1,8 +1,10 @@
 package com.fourbeat.presentation.ui.main
 
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.navigation
 import com.fourbeat.presentation.navigation.MainScreen
@@ -12,13 +14,18 @@ import com.fourbeat.presentation.ui.main.creategroup.CreateGroupRoute
 import com.fourbeat.presentation.ui.main.groupdetail.GroupDetailRoute
 import com.fourbeat.presentation.ui.main.home.HomeRoute
 import com.fourbeat.presentation.ui.main.joingroup.JoinGroupRoute
+import com.fourbeat.domain.model.post.Song
+import com.fourbeat.presentation.ui.main.camera.CameraRoute
+import com.fourbeat.presentation.ui.main.createpost.CreatePostRoute
 import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
 import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
+
+const val VIDEO_PATH_KEY = "videoFileUri"
 
 fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
     val navController = appState.naveController
 
-    navigation<ScreenGraph.Main>(startDestination = MainScreen.Home) {
+    navigation<ScreenGraph.Main>(startDestination = MainScreen.GroupDetail(1L)) {
         composable<MainScreen.Home> {
             HomeRoute(
                 navigateToCreateGroup = navController::navigateToCreateGroup,
@@ -48,12 +55,31 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
         }
         composable<MainScreen.SelectSong> {
             SelectSongRoute(
-                navigateToCreatePost = navController::navigateToCreatePost,
+                navigateToCreatePost = { groupId, song -> navController.navigateToCreatePost(groupId, song) },
                 navigateToBack = navController::popBackStack,
             )
         }
         composable<MainScreen.CreatePost> {
+            val backStackEntry by navController.currentBackStackEntryAsState()
 
+            CreatePostRoute(
+                backStackEntry = backStackEntry,
+                navigateToGroupDetail = {
+                    navController.popBackStack<MainScreen.GroupDetail>(inclusive = false)
+                },
+                navigateToCamera = navController::navigateToCamera,
+                navigateToBack = navController::popBackStack,
+            )
+        }
+        composable<MainScreen.Camera> {
+            CameraRoute(
+                navigateBack = { filePath ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(VIDEO_PATH_KEY, filePath)
+                    navController.popBackStack()
+                },
+            )
         }
     }
 }
@@ -75,4 +101,13 @@ fun NavController.navigateToShareGroupCodeDialog(code: String) =
 
 fun NavController.navigateToSelectSong(groupId: Long) = navigate(MainScreen.SelectSong(groupId))
 
-fun NavController.navigateToCreatePost(groupId: Long) = navigate(MainScreen.CreatePost(groupId))
+fun NavController.navigateToCamera() = navigate(MainScreen.Camera)
+
+fun NavController.navigateToCreatePost(groupId: Long, song: Song) = navigate(
+    MainScreen.CreatePost(
+        groupId = groupId,
+        songTitle = song.title,
+        songArtist = song.artist,
+        songImageUrl = song.albumImageUrl,
+    )
+)

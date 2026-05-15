@@ -8,6 +8,10 @@ val bold18 = TextStyle(
     fontSize = 18.sp,
     fontWeight = FontWeight.Bold
 )
+val bold14 = TextStyle(
+    fontSize = 14.sp,
+    fontWeight = FontWeight.Bold
+)
 
 val normal56 = TextStyle(
     fontSize = 56.sp,
