@@ -1,5 +1,6 @@
 package com.fourbeat.domain.usecase.post
 
+import com.fourbeat.domain.exception.PostException
 import com.fourbeat.domain.repository.PostRepository
 import java.io.File
 import javax.inject.Inject
@@ -10,5 +11,7 @@ class UploadVideoFileUseCase @Inject constructor(
     suspend operator fun invoke(uploadUrl: String, file: File, mimeType: String): Result<Unit> =
         runCatching {
             postRepository.uploadVideoFile(uploadUrl, file, mimeType)
+        }.recoverCatching {
+            throw PostException.VideoUploadFailed(it)
         }
 }

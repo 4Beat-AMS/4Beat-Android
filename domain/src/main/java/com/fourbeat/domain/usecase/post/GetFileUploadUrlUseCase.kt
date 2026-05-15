@@ -1,5 +1,6 @@
 package com.fourbeat.domain.usecase.post
 
+import com.fourbeat.domain.exception.PostException
 import com.fourbeat.domain.model.post.FileUploadUrl
 import com.fourbeat.domain.model.post.FileUploadUrlRequest
 import com.fourbeat.domain.repository.PostRepository
@@ -11,5 +12,7 @@ class GetFileUploadUrlUseCase @Inject constructor(
     suspend operator fun invoke(request: FileUploadUrlRequest): Result<FileUploadUrl> =
         runCatching {
             postRepository.getFileUploadUrl(request)
+        }.recoverCatching {
+            throw PostException.GetUploadUrlFailed(it)
         }
 }
