@@ -1,5 +1,7 @@
 package com.fourbeat.presentation.ui.main.camera
 
+import android.app.Activity
+import android.content.pm.ActivityInfo
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -21,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,6 +46,16 @@ fun CameraRoute(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+
+    DisposableEffect(Unit) {
+        val activity = context as? Activity
+        val originalOrientation = activity?.requestedOrientation
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        onDispose {
+            activity?.requestedOrientation =
+                originalOrientation ?: ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        }
+    }
     val previewView = remember { PreviewView(context) }
     val uiState = viewModel.uiState
     val videoCapture = remember(uiState.cameraLens) {
@@ -111,14 +124,14 @@ private fun CameraScreen(
         }
         RecordButton(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .align(Alignment.CenterEnd)
                 .padding(bottom = 48.dp),
             isRecording = uiState.isRecording,
             onClick = { onEvent(CameraEvent.OnRecordButtonClicked) },
         )
         IconButton(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.TopEnd)
                 .padding(bottom = 48.dp, end = 24.dp),
             onClick = { onEvent(CameraEvent.OnCameraFlipClicked) },
             enabled = !uiState.isRecording,
