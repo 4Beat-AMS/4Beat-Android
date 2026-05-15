@@ -1,17 +1,13 @@
 package com.fourbeat.presentation.ui.main.camera
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.pm.ActivityInfo
-import androidx.camera.compose.CameraXViewfinder
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
-import androidx.camera.core.SurfaceRequest
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
 import androidx.camera.video.VideoCapture
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,12 +21,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,13 +30,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import kotlin.coroutines.resume
-import kotlinx.coroutines.suspendCancellableCoroutine
+import timber.log.Timber
 
-@SuppressLint("SourceLockedOrientationActivity")
 @Composable
 fun CameraRoute(
     navigateBack: (filePath: String) -> Unit,
@@ -52,55 +42,14 @@ fun CameraRoute(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-
-    DisposableEffect(Unit) {
-        val activity = context as Activity
-        val original = activity.requestedOrientation
-        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-        onDispose { activity.requestedOrientation = original }
-    }
-
-    var surfaceRequest by remember { mutableStateOf<SurfaceRequest?>(null) }
-    val recorder = remember {
-        Recorder.Builder()
-            .setQualitySelector(QualitySelector.from(Quality.HD))
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    val previewView = remember { PreviewView(context) }
+    val uiState = viewModel.uiState
+    val videoCapture = remember(uiState.cameraLens) {
+        val recorder = Recorder.Builder()
+            .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
             .build()
-    }
-    val videoCapture = remember { VideoCapture.withOutput(recorder) }
-    val preview = remember {
-        Preview.Builder().build().also {
-            it.setSurfaceProvider { request -> surfaceRequest = request }
-        }
-    }
-    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
-
-    LaunchedEffect(Unit) {
-        cameraProvider = suspendCancellableCoroutine { cont ->
-            val future = ProcessCameraProvider.getInstance(context)
-            future.addListener(
-                {
-                    try { cont.resume(future.get()) }
-                    catch (e: Exception) { cont.cancel(e) }
-                },
-                ContextCompat.getMainExecutor(context),
-            )
-            cont.invokeOnCancellation { future.cancel(true) }
-        }
-    }
-
-    LaunchedEffect(videoCapture) {
-        viewModel.bindVideoCapture(videoCapture)
-    }
-
-    LaunchedEffect(cameraProvider, viewModel.uiState.isFrontCamera) {
-        val provider = cameraProvider ?: return@LaunchedEffect
-        val selector = if (viewModel.uiState.isFrontCamera) {
-            CameraSelector.DEFAULT_FRONT_CAMERA
-        } else {
-            CameraSelector.DEFAULT_BACK_CAMERA
-        }
-        provider.unbindAll()
-        provider.bindToLifecycle(lifecycleOwner, selector, preview, videoCapture)
+        VideoCapture.withOutput(recorder)
     }
 
     LaunchedEffect(Unit) {
@@ -111,9 +60,27 @@ fun CameraRoute(
         }
     }
 
+    LaunchedEffect(uiState.cameraLens, videoCapture) {
+        val cameraProvider = cameraProviderFuture.get()
+        val preview = Preview.Builder().build().apply {
+            surfaceProvider = previewView.surfaceProvider
+        }
+        try {
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner = lifecycleOwner,
+                cameraSelector = CameraSelector.Builder().requireLensFacing(uiState.cameraLens).build(),
+                preview, videoCapture
+            )
+            viewModel.onEvent(CameraEvent.OnVideoCaptureReady(videoCapture))
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
+    }
+
     CameraScreen(
         uiState = viewModel.uiState,
-        surfaceRequest = surfaceRequest,
+        previewView = previewView,
         onEvent = viewModel::onEvent,
     )
 }
@@ -121,7 +88,7 @@ fun CameraRoute(
 @Composable
 private fun CameraScreen(
     uiState: CameraUiState,
-    surfaceRequest: SurfaceRequest?,
+    previewView: PreviewView,
     onEvent: (CameraEvent) -> Unit,
 ) {
     Box(
@@ -129,12 +96,10 @@ private fun CameraScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        surfaceRequest?.let { request ->
-            CameraXViewfinder(
-                surfaceRequest = request,
-                modifier = Modifier.fillMaxSize(),
-            )
-        }
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { previewView }
+        )
         if (uiState.isRecording) {
             Text(
                 modifier = Modifier.align(Alignment.Center),
