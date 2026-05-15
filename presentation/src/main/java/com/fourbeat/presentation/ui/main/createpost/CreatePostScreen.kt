@@ -1,5 +1,8 @@
 package com.fourbeat.presentation.ui.main.createpost
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,17 +17,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import android.Manifest
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,7 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.navigation.NavBackStackEntry
 import com.fourbeat.domain.model.post.Song
+import com.fourbeat.presentation.model.post.VideoSource
 import com.fourbeat.presentation.theme.Gray100
 import com.fourbeat.presentation.theme.Gray500
 import com.fourbeat.presentation.theme.PrimaryColor
@@ -48,15 +48,18 @@ import com.fourbeat.presentation.theme.normal14
 import com.fourbeat.presentation.ui.component.FourBeatButton
 import com.fourbeat.presentation.ui.component.FourBeatLabel
 import com.fourbeat.presentation.ui.component.FourBeatTextArea
-import com.fourbeat.presentation.ui.component.VideoPlayer
 import com.fourbeat.presentation.ui.component.NetworkImage
 import com.fourbeat.presentation.ui.component.TitleTopBar
+import com.fourbeat.presentation.ui.component.VideoPlayer
+import com.fourbeat.presentation.ui.main.VIDEO_PATH_KEY
 import com.fourbeat.presentation.ui.util.noRippleClickable
+import timber.log.Timber
 import java.io.File
 
 @Composable
 fun CreatePostRoute(
     modifier: Modifier = Modifier,
+    backStackEntry: NavBackStackEntry?,
     navigateToGroupDetail: () -> Unit,
     navigateToCamera: () -> Unit,
     navigateToBack: () -> Unit,
@@ -65,9 +68,8 @@ fun CreatePostRoute(
     var launchPermission by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions(),
-    ) { permissions ->
-        val granted = permissions.values.all { it }
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
         viewModel.onEvent(CreatePostEvent.OnCameraPermissionResult(granted))
     }
 
@@ -82,16 +84,21 @@ fun CreatePostRoute(
         }
     }
 
+    LaunchedEffect(backStackEntry) {
+        backStackEntry
+            ?.savedStateHandle
+            ?.get<String>(VIDEO_PATH_KEY)
+            ?.let {
+                Timber.tag("post").i(it)
+                viewModel.onEvent(CreatePostEvent.OnVideoFileSelected(File(it)))
+                backStackEntry.savedStateHandle.remove<String>(VIDEO_PATH_KEY)
+            }
+    }
+
     LaunchedEffect(launchPermission) {
         if (launchPermission) {
             launchPermission = false
-            val permissions = buildList {
-                add(Manifest.permission.CAMERA)
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-                    add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                }
-            }.toTypedArray()
-            permissionLauncher.launch(permissions)
+            permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
@@ -261,7 +268,7 @@ private fun VideoPreview(
     ) {
         VideoPlayer(
             modifier = Modifier.fillMaxSize(),
-            videoUrl = Uri.fromFile(videoFile).toString(),
+            source = VideoSource.Local(videoFile)
         )
         IconButton(
             modifier = Modifier.align(Alignment.TopEnd),

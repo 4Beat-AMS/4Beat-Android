@@ -1,8 +1,10 @@
 package com.fourbeat.presentation.ui.main
 
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.navigation
 import com.fourbeat.presentation.navigation.MainScreen
@@ -18,10 +20,12 @@ import com.fourbeat.presentation.ui.main.createpost.CreatePostRoute
 import com.fourbeat.presentation.ui.main.selectsong.SelectSongRoute
 import com.fourbeat.presentation.ui.main.sharegroupcode.ShareGroupCodeRoute
 
+const val VIDEO_PATH_KEY = "videoFileUri"
+
 fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
     val navController = appState.naveController
 
-    navigation<ScreenGraph.Main>(startDestination = MainScreen.Home) {
+    navigation<ScreenGraph.Main>(startDestination = MainScreen.GroupDetail(1L)) {
         composable<MainScreen.Home> {
             HomeRoute(
                 navigateToCreateGroup = navController::navigateToCreateGroup,
@@ -56,7 +60,10 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
             )
         }
         composable<MainScreen.CreatePost> {
+            val backStackEntry by navController.currentBackStackEntryAsState()
+
             CreatePostRoute(
+                backStackEntry = backStackEntry,
                 navigateToGroupDetail = {
                     navController.popBackStack<MainScreen.GroupDetail>(inclusive = false)
                 },
@@ -69,7 +76,7 @@ fun NavGraphBuilder.nestedMainGraph(appState: FourBeatAppState) {
                 navigateBack = { filePath ->
                     navController.previousBackStackEntry
                         ?.savedStateHandle
-                        ?.set("videoFilePath", filePath)
+                        ?.set(VIDEO_PATH_KEY, filePath)
                     navController.popBackStack()
                 },
             )
