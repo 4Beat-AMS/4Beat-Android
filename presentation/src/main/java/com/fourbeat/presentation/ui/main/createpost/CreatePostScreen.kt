@@ -53,7 +53,7 @@ import com.fourbeat.presentation.ui.component.TitleTopBar
 import com.fourbeat.presentation.ui.component.VideoPlayer
 import com.fourbeat.presentation.ui.main.VIDEO_PATH_KEY
 import com.fourbeat.presentation.ui.util.noRippleClickable
-import timber.log.Timber
+import android.webkit.MimeTypeMap
 import java.io.File
 
 @Composable
@@ -88,9 +88,11 @@ fun CreatePostRoute(
         backStackEntry
             ?.savedStateHandle
             ?.get<String>(VIDEO_PATH_KEY)
-            ?.let {
-                Timber.tag("post").i(it)
-                viewModel.onEvent(CreatePostEvent.OnVideoFileSelected(File(it)))
+            ?.let { path ->
+                val file = File(path)
+                val mimeType = MimeTypeMap.getSingleton()
+                    .getMimeTypeFromExtension(file.extension) ?: "video/mp4"
+                viewModel.onEvent(CreatePostEvent.OnVideoFileSelected(file, mimeType))
                 backStackEntry.savedStateHandle.remove<String>(VIDEO_PATH_KEY)
             }
     }
@@ -151,7 +153,7 @@ private fun CreatePostScreen(
             ) {
                 FourBeatLabel(text = "영상")
                 VideoArea(
-                    videoFile = uiState.videoFile,
+                    videoFile = uiState.videoFileInfo?.file,
                     onVideoBoxClicked = { onEvent(CreatePostEvent.OnVideoShotClicked) },
                     onVideoDeleted = { onEvent(CreatePostEvent.OnVideoDeleted) },
                 )

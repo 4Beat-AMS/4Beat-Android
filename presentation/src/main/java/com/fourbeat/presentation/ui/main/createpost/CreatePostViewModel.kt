@@ -7,8 +7,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.fourbeat.domain.exception.PostException
+import timber.log.Timber
 import com.fourbeat.domain.model.post.CreatePostRequest
 import com.fourbeat.domain.model.post.Song
+import com.fourbeat.domain.model.post.VideoFileInfo
 import com.fourbeat.domain.usecase.group.CreatePostUseCase
 import com.fourbeat.domain.usecase.group.GetGroupPostStatusUseCase
 import com.fourbeat.presentation.mapper.toAnnounce
@@ -65,10 +68,12 @@ class CreatePostViewModel @Inject constructor(
                     _sideEffect.send(CreatePostSideEffect.NavigateToCamera)
                 }
             }
-            is CreatePostEvent.OnVideoFileSelected -> uiState = uiState.copy(videoFile = event.file)
+            is CreatePostEvent.OnVideoFileSelected -> uiState = uiState.copy(
+                videoFileInfo = VideoFileInfo(file = event.file, mimeType = event.mimeType)
+            )
             CreatePostEvent.OnVideoDeleted -> {
-                val file = uiState.videoFile
-                uiState = uiState.copy(videoFile = null)
+                val file = uiState.videoFileInfo?.file
+                uiState = uiState.copy(videoFileInfo = null)
                 viewModelScope.launch(Dispatchers.IO) { file?.delete() }
             }
             is CreatePostEvent.OnCommentChanged -> uiState = uiState.copy(comment = event.comment)
@@ -89,12 +94,19 @@ class CreatePostViewModel @Inject constructor(
                 request = CreatePostRequest(
                     song = song,
                     comment = uiState.comment.ifBlank { null },
-                    videoFile = uiState.videoFile,
+                    videoUrl = null,
                 ),
+                videoFileInfo = uiState.videoFileInfo,
             ).onSuccess {
                 _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail)
-            }.onFailure {
+            }.onFailure { exception ->
                 uiState = uiState.copy(isLoading = false)
+                when (exception) {
+                    is PostException.GetUploadUrlFailed -> Timber.e(exception, "업로드 URL 발급 실패")
+                    is PostException.VideoUploadFailed -> Timber.e(exception, "영상 업로드 실패")
+                    is PostException.CreatePostFailed -> Timber.e(exception, "게시글 작성 실패")
+                    else -> Timber.e(exception)
+                }
             }
         }
     }
