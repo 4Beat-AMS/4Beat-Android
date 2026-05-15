@@ -12,9 +12,5 @@ interface GroupDataSource {
     suspend fun joinGroup(code: String): GroupResponse
     suspend fun getGroupInfo(groupId: Long): GroupResponse
     suspend fun getGroupPostStatus(groupId: Long): MyPostStatusResponse
-    suspend fun createPost(
-        groupId: Long,
-        body: CreatePostRequestBody,
-        videoFile: java.io.File?,
-    ): PostResponse
+    suspend fun createPost(groupId: Long, body: CreatePostRequestBody): PostResponse
 }

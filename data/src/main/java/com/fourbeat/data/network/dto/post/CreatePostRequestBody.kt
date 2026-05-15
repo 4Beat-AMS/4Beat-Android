@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class CreatePostRequestBody(
     val song: PostSongDto,
     val comment: String? = null,
+    val videoUrl: String? = null,
 )

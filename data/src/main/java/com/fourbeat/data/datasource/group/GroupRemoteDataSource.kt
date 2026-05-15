@@ -8,17 +8,10 @@ import com.fourbeat.data.network.dto.post.CreatePostRequestBody
 import com.fourbeat.data.network.dto.post.PostResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.utils.io.streams.asInput
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
-import kotlinx.serialization.json.Json
-import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -54,36 +47,9 @@ class GroupRemoteDataSource @Inject constructor(
             .get("groups/$groupId/posts/status")
             .body()
 
-    override suspend fun createPost(
-        groupId: Long,
-        body: CreatePostRequestBody,
-        videoFile: File?,
-    ): PostResponse =
+    override suspend fun createPost(groupId: Long, body: CreatePostRequestBody): PostResponse =
         client
             .post("groups/$groupId/posts") {
-                setBody(
-                    MultiPartFormDataContent(
-                        formData {
-                            append(
-                                key = "data",
-                                value = Json.encodeToString(body),
-                                headers = Headers.build {
-                                    append(HttpHeaders.ContentType, "application/json")
-                                },
-                            )
-                            if (videoFile != null) {
-                                appendInput(
-                                    key = "videoFile",
-                                    headers = Headers.build {
-                                        append(HttpHeaders.ContentType, "video/mp4")
-                                        append(HttpHeaders.ContentDisposition, "filename=\"${videoFile.name}\"")
-                                    },
-                                    size = videoFile.length(),
-                                ) { videoFile.inputStream().asInput() }
-                            }
-                        }
-                    )
-                )
-            }
-                .body()
+                setBody(body)
+            }.body()
 }

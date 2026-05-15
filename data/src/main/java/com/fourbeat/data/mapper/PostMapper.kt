@@ -39,6 +39,7 @@ fun CreatePostRequest.asBody(): CreatePostRequestBody =
     CreatePostRequestBody(
         song = song.toDto(),
         comment = comment,
+        videoUrl = videoUrl,
     )
 
 fun FileUploadUrlResponse.toDomain(): FileUploadUrl =
