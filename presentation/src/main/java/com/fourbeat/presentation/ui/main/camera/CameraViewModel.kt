@@ -92,8 +92,7 @@ class CameraViewModel @Inject constructor(
                         stopCountDownJob()
                         if (event.hasError().not()) {
                             viewModelScope.launch {
-                                val filePath = videoFile.absolutePath
-                                _sideEffect.send(CameraSideEffect.SaveVideoAndNavigateBack(filePath))
+                                _sideEffect.send(CameraSideEffect.SaveVideoAndNavigateBack(videoFile.absolutePath))
                             }
                         } else {
                             event.cause?.let {
