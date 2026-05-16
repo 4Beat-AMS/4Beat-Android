@@ -9,8 +9,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.fourbeat.domain.model.post.CreatePostRequest
 import com.fourbeat.domain.model.post.Song
-import com.fourbeat.domain.usecase.group.CreatePostUseCase
+import com.fourbeat.domain.model.post.VideoFileInfo
 import com.fourbeat.domain.usecase.group.GetGroupPostStatusUseCase
+import com.fourbeat.domain.usecase.work.EnqueueCreatePostUseCase
 import com.fourbeat.presentation.mapper.toAnnounce
 import com.fourbeat.presentation.navigation.MainScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreatePostViewModel @Inject constructor(
-    private val createPostUseCase: CreatePostUseCase,
+    private val enqueueCreatePostUseCase: EnqueueCreatePostUseCase,
     private val getGroupPostStatusUseCase: GetGroupPostStatusUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -65,10 +66,12 @@ class CreatePostViewModel @Inject constructor(
                     _sideEffect.send(CreatePostSideEffect.NavigateToCamera)
                 }
             }
-            is CreatePostEvent.OnVideoFileSelected -> uiState = uiState.copy(videoFile = event.file)
+            is CreatePostEvent.OnVideoFileSelected -> uiState = uiState.copy(
+                videoFileInfo = VideoFileInfo(file = event.file, mimeType = event.mimeType)
+            )
             CreatePostEvent.OnVideoDeleted -> {
-                val file = uiState.videoFile
-                uiState = uiState.copy(videoFile = null)
+                val file = uiState.videoFileInfo?.file
+                uiState = uiState.copy(videoFileInfo = null)
                 viewModelScope.launch(Dispatchers.IO) { file?.delete() }
             }
             is CreatePostEvent.OnCommentChanged -> uiState = uiState.copy(comment = event.comment)
@@ -77,25 +80,22 @@ class CreatePostViewModel @Inject constructor(
     }
 
     /*
-    * 게시글 작성
-    * 성공 시, 해당 그룹 상세 화면으로 이동
-    * 실패 시, (TODO)
+    * 게시글 작성 Worker 등록 후 바로 이동
+    * 실제 업로드(URL 발급 → S3 업로드 → 게시글 작성)는 백그라운드에서 수행
     * */
     private fun upload() {
+        uiState = uiState.copy(isLoading = true)
+        enqueueCreatePostUseCase(
+            groupId = route.groupId,
+            request = CreatePostRequest(
+                song = song,
+                comment = uiState.comment.ifBlank { null },
+                videoUrl = null,
+            ),
+            videoFileInfo = uiState.videoFileInfo,
+        )
         viewModelScope.launch {
-            uiState = uiState.copy(isLoading = true)
-            createPostUseCase(
-                groupId = route.groupId,
-                request = CreatePostRequest(
-                    song = song,
-                    comment = uiState.comment.ifBlank { null },
-                    videoFile = uiState.videoFile,
-                ),
-            ).onSuccess {
-                _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail)
-            }.onFailure {
-                uiState = uiState.copy(isLoading = false)
-            }
+            _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail)
         }
     }
 }

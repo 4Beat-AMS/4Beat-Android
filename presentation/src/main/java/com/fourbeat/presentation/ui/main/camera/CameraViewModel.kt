@@ -92,9 +92,7 @@ class CameraViewModel @Inject constructor(
                         stopCountDownJob()
                         if (event.hasError().not()) {
                             viewModelScope.launch {
-                                val filePath = videoFile.absolutePath
-                                Timber.tag("카메라 촬영 path").i(filePath)
-                                _sideEffect.send(CameraSideEffect.SaveVideoAndNavigateBack(filePath))
+                                _sideEffect.send(CameraSideEffect.SaveVideoAndNavigateBack(videoFile.absolutePath))
                             }
                         } else {
                             event.cause?.let {

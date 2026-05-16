@@ -87,4 +87,9 @@ internal object NetworkModule {
                 contentType(ContentType.Application.Json)
             }
         }
+
+    @Provides
+    @Singleton
+    @ExternalStorage
+    fun provideExternalStorageHttpClient(): HttpClient = createKtorClient()
 }

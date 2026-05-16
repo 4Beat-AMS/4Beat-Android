@@ -4,14 +4,18 @@ import com.fourbeat.data.repository.AuthRepositoryImpl
 import com.fourbeat.data.repository.GroupRepositoryImpl
 import com.fourbeat.data.repository.MediaRepositoryImpl
 import com.fourbeat.data.repository.MusicRepositoryImpl
+import com.fourbeat.data.repository.PostRepositoryImpl
 import com.fourbeat.data.repository.PreferenceRepositoryImpl
 import com.fourbeat.data.repository.UserRepositoryImpl
+import com.fourbeat.data.repository.WorkRepositoryImpl
 import com.fourbeat.domain.repository.AuthRepository
 import com.fourbeat.domain.repository.GroupRepository
 import com.fourbeat.domain.repository.MediaRepository
 import com.fourbeat.domain.repository.MusicRepository
+import com.fourbeat.domain.repository.PostRepository
 import com.fourbeat.domain.repository.PreferenceRepository
 import com.fourbeat.domain.repository.UserRepository
+import com.fourbeat.domain.repository.WorkRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -37,4 +41,10 @@ internal interface DataModule {
 
     @Binds
     fun bindsMusicRepository(impl: MusicRepositoryImpl): MusicRepository
+
+    @Binds
+    fun bindsPostRepository(impl: PostRepositoryImpl): PostRepository
+
+    @Binds
+    fun bindsWorkRepository(impl: WorkRepositoryImpl): WorkRepository
 }

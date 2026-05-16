@@ -4,5 +4,5 @@ import com.fourbeat.data.media.MediaMeta
 import kotlinx.coroutines.flow.Flow
 
 interface MediaSessionDataSource {
-    fun getMediaMetaFlow(): Flow<MediaMeta>
+    fun getMediaMetaFlow(): Flow<MediaMeta?>
 }

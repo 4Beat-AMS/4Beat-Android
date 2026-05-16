@@ -64,4 +64,9 @@ dependencies {
 
     // coil
     implementation(libs.bundles.coil)
+
+    // workManager
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 }

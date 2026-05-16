@@ -63,7 +63,8 @@ fun CameraRoute(
     val uiState = viewModel.uiState
     val videoCapture = remember(uiState.cameraLens) {
         val recorder = Recorder.Builder()
-            .setQualitySelector(QualitySelector.from(Quality.HIGHEST))
+            .setQualitySelector(QualitySelector.from(Quality.SD))
+            .setTargetVideoEncodingBitRate(1_000_000)
             .build()
         VideoCapture.withOutput(recorder)
     }

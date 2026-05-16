@@ -13,3 +13,7 @@ annotation class PrivateNetwork
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class SpotifyNetwork
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ExternalStorage

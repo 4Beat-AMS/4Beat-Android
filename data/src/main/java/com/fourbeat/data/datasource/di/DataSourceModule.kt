@@ -4,6 +4,8 @@ import com.fourbeat.data.datasource.auth.AuthDataSource
 import com.fourbeat.data.datasource.auth.AuthRemoteDataSource
 import com.fourbeat.data.datasource.group.GroupDataSource
 import com.fourbeat.data.datasource.group.GroupRemoteDataSource
+import com.fourbeat.data.datasource.post.PostDataSource
+import com.fourbeat.data.datasource.post.PostRemoteDataSource
 import com.fourbeat.data.datasource.spotify.SpotifyDataSource
 import com.fourbeat.data.datasource.spotify.SpotifyRemoteDataSource
 import com.fourbeat.data.datasource.user.UserDataSource
@@ -27,4 +29,7 @@ internal interface DataSourceModule {
 
     @Binds
     fun bindsSpotifyDataSource(impl: SpotifyRemoteDataSource): SpotifyDataSource
+
+    @Binds
+    fun bindsPostDataSource(impl: PostRemoteDataSource): PostDataSource
 }

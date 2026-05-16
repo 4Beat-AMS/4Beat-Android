@@ -23,7 +23,7 @@ class NotificationListenerPermissionLocalDataSource(
         }
         context.contentResolver.registerContentObserver(
             Settings.Secure.getUriFor(ENABLED_NOTIFICATION_LISTENERS),
-            false,
+            true,
             observer,
         )
         trySend(isGranted())

@@ -33,11 +33,5 @@ class GroupRepositoryImpl @Inject constructor(
         groupDataSource.getGroupPostStatus(groupId).toDomain()
 
     override suspend fun createPost(groupId: Long, request: CreatePostRequest): Post =
-        groupDataSource
-            .createPost(
-                groupId = groupId,
-                body = request.asBody(),
-                videoFile = request.videoFile,
-            )
-            .toDomain()
+        groupDataSource.createPost(groupId = groupId, body = request.asBody()).toDomain()
 }
