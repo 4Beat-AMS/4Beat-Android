@@ -19,7 +19,7 @@ class MediaRepositoryImpl @Inject constructor(
     override fun getSongMetaFlow(): Flow<SongMeta?> =
         mediaSessionDataSource
             .getMediaMetaFlow()
-            .map(MediaMeta::toDomain)
+            .map(MediaMeta?::toDomain)
 
     override fun getLiveSongPermissionFlow(): Flow<Boolean> =
         notificationListenerPermissionDataSource.getPermissionFlow()

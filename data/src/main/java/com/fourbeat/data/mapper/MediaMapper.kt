@@ -3,7 +3,8 @@ package com.fourbeat.data.mapper
 import com.fourbeat.data.media.MediaMeta
 import com.fourbeat.domain.model.media.SongMeta
 
-fun MediaMeta.toDomain(): SongMeta? {
+fun MediaMeta?.toDomain(): SongMeta? {
+    if (this == null) return null
     if (title.isNullOrBlank() || artist.isNullOrBlank()) return null
 
     val formattedImageUrl = when {

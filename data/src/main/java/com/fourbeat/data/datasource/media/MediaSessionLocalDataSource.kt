@@ -21,13 +21,13 @@ class MediaSessionLocalDataSource(
     private val context: Context,
     private val sessionManager: MediaSessionManager,
 ) : MediaSessionDataSource {
-    override fun getMediaMetaFlow(): Flow<MediaMeta> = callbackFlow {
+    override fun getMediaMetaFlow(): Flow<MediaMeta?> = callbackFlow {
         val mainHandler = Handler(Looper.getMainLooper())
         var currentController: MediaController? = null
 
         val mediaCallback = object : MediaController.Callback() {
             override fun onMetadataChanged(metadata: MediaMetadata?) {
-                metadata?.let { trySend(it.toMeta()) }
+                trySend(metadata?.toMeta())
             }
         }
 
@@ -40,9 +40,11 @@ class MediaSessionLocalDataSource(
                 currentController?.unregisterCallback(mediaCallback)
                 currentController = activeController
 
-                activeController?.let { controller ->
-                    controller.registerCallback(mediaCallback, mainHandler)
-                    controller.metadata?.let { trySend(it.toMeta()) }
+                if (activeController != null) {
+                    activeController.registerCallback(mediaCallback, mainHandler)
+                    trySend(activeController.metadata?.toMeta())
+                } else {
+                    trySend(null)
                 }
             }
         }
@@ -61,9 +63,11 @@ class MediaSessionLocalDataSource(
                         ?: controllers.firstOrNull()
                 }
             currentController = initialController
-            initialController?.let {
-                it.registerCallback(mediaCallback, mainHandler)
-                it.metadata?.let { meta -> trySend(meta.toMeta()) }
+            if (initialController != null) {
+                initialController.registerCallback(mediaCallback, mainHandler)
+                trySend(initialController.metadata?.toMeta())
+            } else {
+                trySend(null)
             }
         } catch (e: SecurityException) {
             close(e)
