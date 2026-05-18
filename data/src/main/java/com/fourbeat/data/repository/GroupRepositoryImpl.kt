@@ -6,6 +6,7 @@ import com.fourbeat.data.mapper.toDomain
 import com.fourbeat.data.network.dto.group.GroupResponse
 import com.fourbeat.domain.model.group.CreateGroupRequest
 import com.fourbeat.domain.model.group.Group
+import com.fourbeat.domain.model.group.GroupFeed
 import com.fourbeat.domain.model.group.MyPostStatus
 import com.fourbeat.domain.model.post.CreatePostRequest
 import com.fourbeat.domain.model.post.Post
@@ -34,4 +35,7 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun createPost(groupId: Long, request: CreatePostRequest): Post =
         groupDataSource.createPost(groupId = groupId, body = request.asBody()).toDomain()
+
+    override suspend fun getGroupFeed(groupId: Long, date: String): GroupFeed =
+        groupDataSource.getGroupFeed(groupId = groupId, date = date).toDomain()
 }
