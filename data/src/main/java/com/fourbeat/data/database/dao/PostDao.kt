@@ -38,6 +38,18 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE id = :id")
     suspend fun delete(id: Long)
 
+    @Query("DELETE FROM posts WHERE groupId = :groupId AND date = :date AND status = 'STABLE'")
+    suspend fun deleteStableByGroupAndDate(groupId: Long, date: String)
+
+    @Transaction
+    suspend fun replaceStable(groupId: Long, date: String, entities: List<PostEntity>) {
+        deleteStableByGroupAndDate(groupId, date)
+        upsertAll(entities)
+    }
+
+    @Query("SELECT * FROM posts WHERE id = :id")
+    suspend fun getById(id: Long): PostEntity?
+
     @Query("SELECT * FROM posts WHERE workId = :workId LIMIT 1")
     suspend fun getByWorkId(workId: String): PostEntity?
 }

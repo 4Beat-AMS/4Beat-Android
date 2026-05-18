@@ -3,6 +3,9 @@ package com.fourbeat.data.database.entity
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Entity(
     tableName = "posts",
@@ -22,7 +25,7 @@ data class PostEntity(
     val filePath: String?,
     val videoUrl: String?,
     val comment: String?,
-    val createdAt: String,
+    val createdAt: String = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US).format(Date()),
     val status: PostStatus,
     val workId: String?,
     val nextDate: String?,

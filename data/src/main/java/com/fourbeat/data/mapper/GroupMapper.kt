@@ -62,7 +62,7 @@ fun SlotPostResponse.toDomain(): FeedPost =
         createdAt = createdAt,
     )
 
-fun GroupFeedResponse.toPostEntities(groupId: Long): List<PostEntity> =
+fun GroupFeedResponse.toEntities(groupId: Long): List<PostEntity> =
     slots.flatMap { slot ->
         slot.posts.map { post ->
             PostEntity(
@@ -97,7 +97,7 @@ fun List<PostEntity>.toGroupFeed(date: String): GroupFeed {
             GroupFeedSlot(
                 order = first.slotOrder,
                 member = User(id = memberId, name = first.memberName, nickname = first.memberNickname),
-                posts = entities.map { it.toFeedPost() }.sorted(),
+                posts = entities.map(PostEntity::toDomain).sorted(),
             )
         }
         .sorted()

@@ -56,7 +56,7 @@ fun FileUploadUrlRequest.asBody(): FileUploadUrlRequestBody =
         contentType = contentType,
     )
 
-fun PostEntity.toFeedPost(): FeedPost =
+fun PostEntity.toDomain(): FeedPost =
     FeedPost(
         id = id,
         song = Song(title = songTitle, artist = songArtist, albumImageUrl = albumImageUrl),

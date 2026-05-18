@@ -1,8 +1,13 @@
 package com.fourbeat.data.repository
 
+import com.fourbeat.data.database.dao.PostDao
+import com.fourbeat.data.database.entity.PostEntity
+import com.fourbeat.data.database.entity.PostStatus
 import com.fourbeat.data.datasource.group.GroupDataSource
 import com.fourbeat.data.mapper.asBody
 import com.fourbeat.data.mapper.toDomain
+import com.fourbeat.data.mapper.toEntities
+import com.fourbeat.data.mapper.toGroupFeed
 import com.fourbeat.data.network.dto.group.GroupResponse
 import com.fourbeat.domain.model.group.CreateGroupRequest
 import com.fourbeat.domain.model.group.Group
@@ -10,14 +15,19 @@ import com.fourbeat.domain.model.group.GroupFeed
 import com.fourbeat.domain.model.group.MyPostStatus
 import com.fourbeat.domain.model.post.CreatePostRequest
 import com.fourbeat.domain.model.post.Post
+import com.fourbeat.domain.model.user.User
 import com.fourbeat.domain.repository.GroupRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class GroupRepositoryImpl @Inject constructor(
     private val groupDataSource: GroupDataSource,
+    private val postDao: PostDao,
 ) : GroupRepository {
+
     override suspend fun createGroup(request: CreateGroupRequest): Group =
         groupDataSource.createGroup(request.asBody()).toDomain()
 
@@ -38,4 +48,66 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun getGroupFeed(groupId: Long, date: String): GroupFeed =
         groupDataSource.getGroupFeed(groupId = groupId, date = date).toDomain()
+
+    override fun observeGroupFeed(groupId: Long, date: String): Flow<GroupFeed> =
+        postDao.observeByGroupAndDate(groupId, date)
+            .map { entities -> entities.toGroupFeed(date) }
+
+    override suspend fun refreshGroupFeed(groupId: Long, date: String) {
+        val entities = groupDataSource.getGroupFeed(groupId, date).toEntities(groupId)
+        postDao.replaceStable(groupId, date, entities)
+    }
+
+    override suspend fun insertOptimisticPost(
+        groupId: Long,
+        date: String,
+        member: User,
+        slotOrder: Int,
+        request: CreatePostRequest,
+        filePath: String,
+        workId: String,
+    ): Long {
+        val tempId = -System.currentTimeMillis()
+        postDao.insert(
+            PostEntity(
+                id = tempId,
+                groupId = groupId,
+                date = date,
+                memberId = member.id,
+                memberName = member.name,
+                memberNickname = member.nickname,
+                slotOrder = slotOrder,
+                songTitle = request.song.title,
+                songArtist = request.song.artist,
+                albumImageUrl = request.song.albumImageUrl,
+                filePath = filePath,
+                videoUrl = null,
+                comment = request.comment,
+                status = PostStatus.PENDING,
+                workId = workId,
+                nextDate = null,
+                previousDate = null,
+            )
+        )
+        return tempId
+    }
+
+    override suspend fun rollbackPost(tempId: Long) {
+        postDao.delete(tempId)
+    }
+
+    override suspend fun confirmPost(tempId: Long, post: Post) {
+        val pending = postDao.getById(tempId) ?: return
+        postDao.confirmPost(
+            tempId = tempId,
+            realEntity = pending.copy(
+                id = post.id,
+                videoUrl = post.videoUrl,
+                filePath = null,
+                createdAt = post.createdAt,
+                status = PostStatus.STABLE,
+                workId = null,
+            )
+        )
+    }
 }
