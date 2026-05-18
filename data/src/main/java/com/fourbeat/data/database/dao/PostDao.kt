@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PostDao {
-
     @Query("SELECT * FROM posts WHERE groupId = :groupId AND date = :date ORDER BY slotOrder ASC, createdAt ASC")
     fun observeByGroupAndDate(groupId: Long, date: String): Flow<List<PostEntity>>
 
@@ -24,6 +23,12 @@ interface PostDao {
 
     @Query("DELETE FROM posts WHERE groupId = :groupId AND date = :date AND status = 'STABLE'")
     suspend fun deleteStableByGroupAndDate(groupId: Long, date: String)
+
+    @Transaction
+    suspend fun replaceStable(groupId: Long, date: String, posts: List<PostEntity>) {
+        deleteStableByGroupAndDate(groupId, date)
+        upsertAll(posts)
+    }
 
     @Query("SELECT slotOrder FROM posts WHERE groupId = :groupId AND date = :date AND memberId = :memberId LIMIT 1")
     suspend fun getSlotOrderByMember(groupId: Long, date: String, memberId: Long): Int?

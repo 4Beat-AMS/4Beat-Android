@@ -21,6 +21,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.fourbeat.presentation.model.group.GroupFeedUiData
 import com.fourbeat.presentation.ui.main.groupdetail.header.GroupDetailHeader
 
@@ -31,9 +32,11 @@ fun GroupDetailRoute(
     showGroupCodeDialog: (String) -> Unit,
     viewModel: GroupDetailViewModel = hiltViewModel(),
 ) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
     GroupDetailScreen(
         modifier = modifier,
-        uiState = viewModel.uiState,
+        uiState = uiState,
         onEvent = viewModel::onEvent,
         navigateToSelectSong = navigateToSelectSong,
         showGroupCodeDialog = showGroupCodeDialog,

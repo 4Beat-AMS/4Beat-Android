@@ -57,10 +57,10 @@ class GroupRepositoryImpl @Inject constructor(
         postDao.observeByGroupAndDate(groupId, date)
             .map { entities -> entities.toGroupFeed(date) }
 
-    override suspend fun refreshGroupFeed(groupId: Long, date: String) {
-        val entities = groupDataSource.getGroupFeed(groupId, date).toPostEntities(groupId)
-        postDao.deleteStableByGroupAndDate(groupId, date)
-        postDao.upsertAll(entities)
+    override suspend fun refreshGroupFeed(groupId: Long, date: String): GroupFeed {
+        val response = groupDataSource.getGroupFeed(groupId, date)
+        postDao.replaceStable(groupId, date, response.toPostEntities(groupId))
+        return response.toDomain()
     }
 
     override suspend fun insertOptimisticPost(

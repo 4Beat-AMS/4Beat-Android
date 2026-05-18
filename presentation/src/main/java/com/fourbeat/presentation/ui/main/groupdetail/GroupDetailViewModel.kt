@@ -1,33 +1,60 @@
 package com.fourbeat.presentation.ui.main.groupdetail
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.fourbeat.domain.usecase.group.GetGroupFeedUseCase
+import com.fourbeat.domain.usecase.group.ObserveGroupFeedUseCase
+import com.fourbeat.domain.usecase.group.RefreshGroupFeedUseCase
 import com.fourbeat.presentation.mapper.toUiData
+import com.fourbeat.presentation.model.group.GroupFeedUiData
 import com.fourbeat.presentation.navigation.MainScreen
 import com.fourbeat.presentation.util.DateProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class GroupDetailViewModel @Inject constructor(
-    private val getGroupFeedUseCase: GetGroupFeedUseCase,
+    private val observeGroupFeedUseCase: ObserveGroupFeedUseCase,
+    private val refreshGroupFeedUseCase: RefreshGroupFeedUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val groupId = savedStateHandle.toRoute<MainScreen.GroupDetail>().groupId
+    private val currentDate = MutableStateFlow(DateProvider.today())
+    private val adjacentFeeds = MutableStateFlow<Pair<GroupFeedUiData?, GroupFeedUiData?>>(null to null)
 
-    var uiState by mutableStateOf(GroupDetailUiState())
-        private set
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState = combine(
+        currentDate.flatMapLatest { date -> observeGroupFeedUseCase(groupId, date) },
+        adjacentFeeds,
+    ) { feed, (prev, next) ->
+        GroupDetailUiState(
+            currentFeed = feed.toUiData(),
+            previousFeed = prev,
+            nextFeed = next,
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = GroupDetailUiState(isLoading = true),
+    )
 
     init {
-        loadInitial(DateProvider.today())
+        viewModelScope.launch {
+            refreshGroupFeedUseCase(groupId, DateProvider.today())
+                .onSuccess { feed ->
+                    launch { feed.previousDate?.let { prefetch(it, isPrevious = true) } }
+                    launch { feed.nextDate?.let { prefetch(it, isPrevious = false) } }
+                }
+        }
     }
 
     fun onEvent(event: GroupDetailEvent) {
@@ -37,54 +64,36 @@ class GroupDetailViewModel @Inject constructor(
         }
     }
 
-    private fun loadInitial(date: String) {
-        viewModelScope.launch {
-            uiState = GroupDetailUiState(isLoading = true)
-            getGroupFeedUseCase(groupId = groupId, date = date)
-                .onSuccess { feed ->
-                    uiState = GroupDetailUiState(currentFeed = feed.toUiData())
-                    launch { feed.previousDate?.let { prefetch(it, isPrevious = true) } }
-                    launch { feed.nextDate?.let { prefetch(it, isPrevious = false) } }
-                }
-                .onFailure {
-                    uiState = uiState.copy(isLoading = false)
-                }
-        }
-    }
-
     private fun scrollToPrev() {
-        val prevFeed = uiState.previousFeed ?: return
-        val oldCurrent = uiState.currentFeed
-        uiState = uiState.copy(
-            previousFeed = null,
-            currentFeed = prevFeed,
-            nextFeed = oldCurrent,
-        )
+        val current = uiState.value.currentFeed ?: return
+        val prev = uiState.value.previousFeed ?: return
+        adjacentFeeds.value = null to current
+        currentDate.value = prev.date
         viewModelScope.launch {
-            prevFeed.previousDate?.let { prefetch(it, isPrevious = true) }
+            refreshGroupFeedUseCase(groupId, prev.date)
+            prev.previousDate?.let { prefetch(it, isPrevious = true) }
         }
     }
 
     private fun scrollToNext() {
-        val nextFeed = uiState.nextFeed ?: return
-        val oldCurrent = uiState.currentFeed
-        uiState = uiState.copy(
-            previousFeed = oldCurrent,
-            currentFeed = nextFeed,
-            nextFeed = null,
-        )
+        val current = uiState.value.currentFeed ?: return
+        val next = uiState.value.nextFeed ?: return
+        adjacentFeeds.value = current to null
+        currentDate.value = next.date
         viewModelScope.launch {
-            nextFeed.nextDate?.let { prefetch(it, isPrevious = false) }
+            refreshGroupFeedUseCase(groupId, next.date)
+            next.nextDate?.let { prefetch(it, isPrevious = false) }
         }
     }
 
     private suspend fun prefetch(date: String, isPrevious: Boolean) {
-        getGroupFeedUseCase(groupId = groupId, date = date)
+        refreshGroupFeedUseCase(groupId, date)
             .onSuccess { feed ->
-                uiState = if (isPrevious) {
-                    uiState.copy(previousFeed = feed.toUiData())
+                val (prev, next) = adjacentFeeds.value
+                adjacentFeeds.value = if (isPrevious) {
+                    feed.toUiData() to next
                 } else {
-                    uiState.copy(nextFeed = feed.toUiData())
+                    prev to feed.toUiData()
                 }
             }
     }
