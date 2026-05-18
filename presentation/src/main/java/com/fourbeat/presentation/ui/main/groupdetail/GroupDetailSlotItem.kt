@@ -40,6 +40,7 @@ fun GroupDetailSlotItem(
     modifier: Modifier = Modifier,
     slot: GroupFeedSlotUiModel,
     slotHeight: Dp,
+    isActive: Boolean,
 ) {
     if (slot.posts.isEmpty()) {
         SlotEmptyContent(modifier = modifier, member = slot.member)
@@ -50,9 +51,12 @@ fun GroupDetailSlotItem(
             modifier = modifier,
         ) { page ->
             SlotPostItem(
-                modifier = Modifier.fillMaxWidth().height(slotHeight),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(slotHeight),
                 post = slot.posts[page],
                 member = slot.member,
+                isActive = isActive && page == pagerState.settledPage,
             )
         }
     }
@@ -63,18 +67,20 @@ private fun SlotPostItem(
     modifier: Modifier = Modifier,
     post: FeedPostUiModel,
     member: User,
+    isActive: Boolean,
 ) {
     Box(modifier = modifier.clipToBounds()) {
         if (post.videoUrl != null) {
             VideoPlayer(
                 modifier = Modifier.fillMaxSize(),
                 source = VideoSource.Remote(post.videoUrl),
+                isActive = isActive,
             )
         } else {
             AsyncImage(
+                modifier = Modifier.fillMaxSize(),
                 model = post.song.albumImageUrl,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,
             )
         }

@@ -113,7 +113,7 @@ private fun GroupDetailFeed(
             else -> null
         }
         if (feed != null) {
-            GroupDetailDatePage(feed = feed)
+            GroupDetailDatePage(feed = feed, isActive = page == 1)
         } else {
             Box(modifier = Modifier.fillMaxSize())
         }
@@ -124,6 +124,7 @@ private fun GroupDetailFeed(
 private fun GroupDetailDatePage(
     modifier: Modifier = Modifier,
     feed: GroupFeedUiData,
+    isActive: Boolean,
 ) {
     val slotGroups = remember(feed.slots) { feed.slots.chunked(3) }
 
@@ -138,6 +139,7 @@ private fun GroupDetailDatePage(
                 modifier = Modifier.fillMaxSize(),
             ) { page ->
                 val group = slotGroups.getOrNull(page) ?: return@HorizontalPager
+                val isGroupActive = isActive && page == pagerState.settledPage
                 Column(modifier = Modifier.fillMaxSize()) {
                     group.forEach { slot ->
                         GroupDetailSlotItem(
@@ -146,6 +148,7 @@ private fun GroupDetailDatePage(
                                 .height(slotHeight),
                             slot = slot,
                             slotHeight = slotHeight,
+                            isActive = isGroupActive,
                         )
                     }
                 }

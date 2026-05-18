@@ -3,6 +3,7 @@ package com.fourbeat.presentation.ui.component
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,7 +21,7 @@ import com.fourbeat.presentation.model.post.VideoSource
 fun VideoPlayer(
     modifier: Modifier = Modifier,
     source: VideoSource,
-    autoPlay: Boolean = true,
+    isActive: Boolean = true,
 ) {
     val context = LocalContext.current
 
@@ -34,13 +35,16 @@ fun VideoPlayer(
     val exoPlayer = remember(uri) {
         ExoPlayer.Builder(context).build().apply {
             setMediaItem(MediaItem.fromUri(uri))
-            playWhenReady = autoPlay
             repeatMode = ExoPlayer.REPEAT_MODE_ONE
             prepare()
         }
     }
 
-    DisposableEffect(Unit) {
+    LaunchedEffect(isActive, exoPlayer) {
+        if (isActive) exoPlayer.play() else exoPlayer.pause()
+    }
+
+    DisposableEffect(exoPlayer) {
         onDispose { exoPlayer.release() }
     }
 
@@ -48,10 +52,20 @@ fun VideoPlayer(
         modifier = modifier,
         factory = { ctx ->
             PlayerView(ctx).apply {
-                player = exoPlayer
                 useController = false
+                controllerAutoShow = false
+                setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+                setKeepContentOnPlayerReset(true)
+                setShutterBackgroundColor(android.graphics.Color.TRANSPARENT)
                 resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             }
+        },
+        update = { view ->
+            if (view.player != exoPlayer) {
+                view.player = exoPlayer
+            }
+            view.useController = false
+            view.hideController()
         },
     )
 }
