@@ -11,10 +11,23 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.fourbeat.presentation.model.post.VideoSource
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+
+@OptIn(UnstableApi::class)
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface VideoCacheEntryPoint {
+    fun cacheDataSourceFactory(): CacheDataSource.Factory
+}
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -25,6 +38,13 @@ fun VideoPlayer(
 ) {
     val context = LocalContext.current
 
+    val cacheDataSourceFactory = remember {
+        EntryPointAccessors.fromApplication(
+            context.applicationContext,
+            VideoCacheEntryPoint::class.java,
+        ).cacheDataSourceFactory()
+    }
+
     val uri = remember(source) {
         when (source) {
             is VideoSource.Local -> source.file.toUri()
@@ -33,11 +53,14 @@ fun VideoPlayer(
     }
 
     val exoPlayer = remember(uri) {
-        ExoPlayer.Builder(context).build().apply {
-            setMediaItem(MediaItem.fromUri(uri))
-            repeatMode = ExoPlayer.REPEAT_MODE_ONE
-            prepare()
-        }
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(cacheDataSourceFactory))
+            .build()
+            .apply {
+                setMediaItem(MediaItem.fromUri(uri))
+                repeatMode = ExoPlayer.REPEAT_MODE_ONE
+                prepare()
+            }
     }
 
     LaunchedEffect(isActive, exoPlayer) {
