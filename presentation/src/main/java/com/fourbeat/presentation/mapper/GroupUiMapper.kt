@@ -31,6 +31,8 @@ fun MyPostStatus.toAnnounce(): String =
 fun GroupFeed.toUiData(): GroupFeedUiData =
     GroupFeedUiData(
         date = date,
+        previousDate = previousDate,
+        nextDate = nextDate,
         slots = slots.map(GroupFeedSlot::toUiModel),
     )
 

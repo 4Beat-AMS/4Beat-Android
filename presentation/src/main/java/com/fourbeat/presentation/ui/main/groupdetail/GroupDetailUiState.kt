@@ -10,10 +10,6 @@ data class GroupDetailUiState(
 )
 
 sealed interface GroupDetailEvent {
-    data class OnDateChanged(val date: String) : GroupDetailEvent
-    data object OnBackClicked : GroupDetailEvent
-}
-
-sealed interface GroupDetailSideEffect {
-    data object NavigateToBack : GroupDetailSideEffect
+    data object OnScrollToPrev : GroupDetailEvent
+    data object OnScrollToNext : GroupDetailEvent
 }

@@ -50,7 +50,7 @@ fun VideoPlayer(
             PlayerView(ctx).apply {
                 player = exoPlayer
                 useController = false
-                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIXED_WIDTH
+                resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM
             }
         },
     )
