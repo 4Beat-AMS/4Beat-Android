@@ -2,6 +2,7 @@ package com.fourbeat.data.mapper
 
 import com.fourbeat.data.network.dto.user.RegisterRequestBody
 import com.fourbeat.data.network.dto.user.UserDto
+import com.fourbeat.data.network.dto.user.UserResponse
 import com.fourbeat.domain.model.user.User
 import com.fourbeat.domain.model.user.RegisterRequest
 
@@ -16,5 +17,12 @@ fun UserDto.toDomain(): User =
     User(
         id = id,
         name = name,
+        nickname = nickname,
+    )
+
+fun UserResponse.toDomain(): User =
+    User(
+        id = id,
+        name = username,
         nickname = nickname,
     )

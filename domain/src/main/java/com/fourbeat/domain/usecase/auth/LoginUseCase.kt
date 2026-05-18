@@ -10,6 +10,6 @@ class LoginUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(email: String): Result<Unit> = runCatching {
         authRepository.login(email)
-            .also { uid -> preferenceRepository.saveUid(uid) }
+            .also { user -> preferenceRepository.saveUser(user) }
     }
 }
