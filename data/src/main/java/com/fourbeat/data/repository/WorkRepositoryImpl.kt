@@ -11,6 +11,7 @@ import com.fourbeat.data.worker.CreatePostWorker.Companion.KEY_MIME_TYPE
 import com.fourbeat.data.worker.CreatePostWorker.Companion.KEY_SONG_ARTIST
 import com.fourbeat.data.worker.CreatePostWorker.Companion.KEY_SONG_IMAGE_URL
 import com.fourbeat.data.worker.CreatePostWorker.Companion.KEY_SONG_TITLE
+import com.fourbeat.data.worker.CreatePostWorker.Companion.KEY_TEMP_ID
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.NetworkType
@@ -32,11 +33,13 @@ class WorkRepositoryImpl @Inject constructor(
     * */
     override fun enqueueCreatePost(
         groupId: Long,
+        tempId: Long,
         request: CreatePostRequest,
         videoFileInfo: VideoFileInfo?,
     ) {
         val inputData = workDataOf(
             KEY_GROUP_ID to groupId,
+            KEY_TEMP_ID to tempId,
             KEY_SONG_TITLE to request.song.title,
             KEY_SONG_ARTIST to request.song.artist,
             KEY_SONG_IMAGE_URL to request.song.albumImageUrl,

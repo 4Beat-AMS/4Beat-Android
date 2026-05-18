@@ -38,7 +38,10 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE id = :id")
     suspend fun delete(id: Long)
 
-    @Query("DELETE FROM posts WHERE groupId = :groupId AND date = :date AND status = 'STABLE'")
+    @Query("""
+        DELETE FROM posts 
+        WHERE groupId = :groupId AND date = :date AND status = 'STABLE'
+    """)
     suspend fun deleteStableByGroupAndDate(groupId: Long, date: String)
 
     @Transaction
