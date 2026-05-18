@@ -21,10 +21,9 @@ interface GroupRepository {
     suspend fun refreshGroupFeed(groupId: Long, date: String)
     suspend fun insertOptimisticPost(
         groupId: Long,
-        date: String,
         member: User,
         request: CreatePostRequest,
-        filePath: String,
+        filePath: String?,
     ): Long
     suspend fun rollbackPost(tempId: Long)
     suspend fun confirmPost(tempId: Long, post: Post)

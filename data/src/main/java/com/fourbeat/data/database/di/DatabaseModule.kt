@@ -3,9 +3,7 @@ package com.fourbeat.data.database.di
 import android.content.Context
 import androidx.room.Room
 import com.fourbeat.data.database.FourBeatDatabase
-import com.fourbeat.data.database.dao.GroupFeedMetaDao
 import com.fourbeat.data.database.dao.PostDao
-import com.fourbeat.data.database.dao.SlotDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,15 +18,13 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideFourBeatDatabase(@ApplicationContext context: Context): FourBeatDatabase =
-        Room.databaseBuilder(context, FourBeatDatabase::class.java, "fourbeat.db")
+        Room.databaseBuilder(
+            context,
+            FourBeatDatabase::class.java,
+            "four-beat.db"
+        )
             .build()
 
     @Provides
     fun providePostDao(db: FourBeatDatabase): PostDao = db.postDao()
-
-    @Provides
-    fun provideSlotDao(db: FourBeatDatabase): SlotDao = db.slotDao()
-
-    @Provides
-    fun provideGroupFeedMetaDao(db: FourBeatDatabase): GroupFeedMetaDao = db.groupFeedMetaDao()
 }

@@ -14,19 +14,16 @@ class SubmitPostUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         groupId: Long,
-        date: String,
         request: CreatePostRequest,
-        filePath: String,
         videoFileInfo: VideoFileInfo?,
     ): Result<Unit> = runCatching {
         val member = preferenceRepository.getUser()
 
         val tempId = groupRepository.insertOptimisticPost(
             groupId = groupId,
-            date = date,
             member = member,
             request = request,
-            filePath = filePath,
+            filePath = videoFileInfo?.file?.absolutePath,
         )
 
         workRepository.enqueueCreatePost(

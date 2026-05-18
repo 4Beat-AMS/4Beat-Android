@@ -11,7 +11,7 @@ import com.fourbeat.domain.model.post.CreatePostRequest
 import com.fourbeat.domain.model.post.Song
 import com.fourbeat.domain.model.post.VideoFileInfo
 import com.fourbeat.domain.usecase.group.GetGroupPostStatusUseCase
-import com.fourbeat.domain.usecase.work.EnqueueCreatePostUseCase
+import com.fourbeat.domain.usecase.group.SubmitPostUseCase
 import com.fourbeat.presentation.mapper.toAnnounce
 import com.fourbeat.presentation.navigation.MainScreen
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreatePostViewModel @Inject constructor(
-    private val enqueueCreatePostUseCase: EnqueueCreatePostUseCase,
+    private val submitPostUseCase: SubmitPostUseCase,
     private val getGroupPostStatusUseCase: GetGroupPostStatusUseCase,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -79,23 +79,24 @@ class CreatePostViewModel @Inject constructor(
         }
     }
 
-    /*
-    * 게시글 작성 Worker 등록 후 바로 이동
-    * 실제 업로드(URL 발급 → S3 업로드 → 게시글 작성)는 백그라운드에서 수행
-    * */
     private fun upload() {
         uiState = uiState.copy(isLoading = true)
-        enqueueCreatePostUseCase(
-            groupId = route.groupId,
-            request = CreatePostRequest(
-                song = song,
-                comment = uiState.comment.ifBlank { null },
-                videoUrl = null,
-            ),
-            videoFileInfo = uiState.videoFileInfo,
-        )
         viewModelScope.launch {
-            _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail)
+            submitPostUseCase(
+                groupId = route.groupId,
+                request = CreatePostRequest(
+                    song = song,
+                    comment = uiState.comment.ifBlank { null },
+                    videoUrl = null,
+                ),
+                videoFileInfo = uiState.videoFileInfo,
+            )
+                .onSuccess {
+                    _sideEffect.send(CreatePostSideEffect.NavigateToGroupDetail)
+                }
+                .onFailure {
+                    uiState = uiState.copy(isLoading = false)
+                }
         }
     }
 }
