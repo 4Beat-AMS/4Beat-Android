@@ -23,10 +23,8 @@ interface GroupRepository {
         groupId: Long,
         date: String,
         member: User,
-        slotOrder: Int,
         request: CreatePostRequest,
         filePath: String,
-        workId: String,
     ): Long
     suspend fun rollbackPost(tempId: Long)
     suspend fun confirmPost(tempId: Long, post: Post)

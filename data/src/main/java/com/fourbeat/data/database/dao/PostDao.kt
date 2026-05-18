@@ -5,26 +5,17 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
-import androidx.room.Upsert
 import com.fourbeat.data.database.entity.PostEntity
 import com.fourbeat.data.database.entity.PostStatus
-import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PostDao {
 
-    @Query("""
-        SELECT * FROM posts 
-        WHERE groupId = :groupId AND date = :date 
-        ORDER BY slotOrder ASC, createdAt ASC
-    """)
-    fun observeByGroupAndDate(groupId: Long, date: String): Flow<List<PostEntity>>
-
-    @Upsert
-    suspend fun upsertAll(posts: List<PostEntity>)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(post: PostEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(posts: List<PostEntity>)
 
     @Query("UPDATE posts SET status = :status WHERE id = :id")
     suspend fun updateStatus(id: Long, status: PostStatus)
@@ -38,21 +29,6 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE id = :id")
     suspend fun delete(id: Long)
 
-    @Query("""
-        DELETE FROM posts 
-        WHERE groupId = :groupId AND date = :date AND status = 'STABLE'
-    """)
-    suspend fun deleteStableByGroupAndDate(groupId: Long, date: String)
-
-    @Transaction
-    suspend fun replaceStable(groupId: Long, date: String, entities: List<PostEntity>) {
-        deleteStableByGroupAndDate(groupId, date)
-        upsertAll(entities)
-    }
-
     @Query("SELECT * FROM posts WHERE id = :id")
     suspend fun getById(id: Long): PostEntity?
-
-    @Query("SELECT * FROM posts WHERE workId = :workId LIMIT 1")
-    suspend fun getByWorkId(workId: String): PostEntity?
 }

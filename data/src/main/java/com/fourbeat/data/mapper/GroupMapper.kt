@@ -1,7 +1,10 @@
 package com.fourbeat.data.mapper
 
+import com.fourbeat.data.database.entity.GroupFeedMetaEntity
 import com.fourbeat.data.database.entity.PostEntity
 import com.fourbeat.data.database.entity.PostStatus
+import com.fourbeat.data.database.entity.SlotEntity
+import com.fourbeat.data.database.entity.SlotWithPosts
 import com.fourbeat.data.network.dto.group.CreateGroupRequestBody
 import com.fourbeat.data.network.dto.group.GroupFeedResponse
 import com.fourbeat.data.network.dto.group.GroupResponse
@@ -62,44 +65,49 @@ fun SlotPostResponse.toDomain(): FeedPost =
         createdAt = createdAt,
     )
 
-fun GroupFeedResponse.toEntities(groupId: Long): List<PostEntity> =
-    slots.flatMap { slot ->
-        slot.posts.map { post ->
-            PostEntity(
-                id = post.id,
-                groupId = groupId,
-                date = date,
-                memberId = slot.member.id,
-                memberName = slot.member.name,
-                memberNickname = slot.member.nickname,
-                slotOrder = slot.order,
-                songTitle = post.song.title,
-                songArtist = post.song.artist,
-                albumImageUrl = post.song.imageUrl,
-                filePath = null,
-                videoUrl = post.videoUrl,
-                comment = post.comment,
-                createdAt = post.createdAt,
-                status = PostStatus.STABLE,
-                workId = null,
-                nextDate = nextDate,
-                previousDate = previousDate,
-            )
-        }
-    }
+fun GroupFeedResponse.toMetaEntity(groupId: Long): GroupFeedMetaEntity =
+    GroupFeedMetaEntity(
+        groupId = groupId,
+        date = date,
+        nextDate = nextDate,
+        previousDate = previousDate,
+    )
 
-fun List<PostEntity>.toGroupFeed(date: String): GroupFeed {
-    val nextDate = firstOrNull()?.nextDate
-    val previousDate = firstOrNull()?.previousDate
-    val slots = groupBy { it.memberId }
-        .map { (memberId, entities) ->
-            val first = entities.first()
-            GroupFeedSlot(
-                order = first.slotOrder,
-                member = User(id = memberId, name = first.memberName, nickname = first.memberNickname),
-                posts = entities.map(PostEntity::toDomain).sorted(),
-            )
-        }
-        .sorted()
-    return GroupFeed(date = date, nextDate = nextDate, previousDate = previousDate, slots = slots)
-}
+fun SlotResponse.toSlotEntity(groupId: Long, date: String): SlotEntity =
+    SlotEntity(
+        groupId = groupId,
+        date = date,
+        memberId = member.id,
+        memberName = member.name,
+        memberNickname = member.nickname,
+        slotOrder = order,
+    )
+
+fun SlotPostResponse.toPostEntity(slotId: Long): PostEntity =
+    PostEntity(
+        id = id,
+        slotId = slotId,
+        songTitle = song.title,
+        songArtist = song.artist,
+        albumImageUrl = song.imageUrl,
+        filePath = null,
+        videoUrl = videoUrl,
+        comment = comment,
+        createdAt = createdAt,
+        status = PostStatus.STABLE,
+    )
+
+fun SlotWithPosts.toDomain(): GroupFeedSlot =
+    GroupFeedSlot(
+        order = slot.slotOrder,
+        member = User(id = slot.memberId, name = slot.memberName, nickname = slot.memberNickname),
+        posts = posts.map { it.toDomain() }.sorted(),
+    )
+
+fun List<SlotWithPosts>.toGroupFeed(meta: GroupFeedMetaEntity?, date: String): GroupFeed =
+    GroupFeed(
+        date = date,
+        nextDate = meta?.nextDate,
+        previousDate = meta?.previousDate,
+        slots = map { it.toDomain() }.sorted(),
+    )

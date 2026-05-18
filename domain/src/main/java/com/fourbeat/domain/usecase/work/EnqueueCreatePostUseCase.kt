@@ -10,7 +10,8 @@ class EnqueueCreatePostUseCase @Inject constructor(
 ) {
     operator fun invoke(
         groupId: Long,
+        tempId: Long,
         request: CreatePostRequest,
         videoFileInfo: VideoFileInfo?,
-    ) = workRepository.enqueueCreatePost(groupId, request, videoFileInfo)
+    ) = workRepository.enqueueCreatePost(groupId, tempId, request, videoFileInfo)
 }
