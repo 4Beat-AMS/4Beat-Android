@@ -10,6 +10,6 @@ data class FeedPost(
     val createdAt: String,
 ) : Comparable<FeedPost> {
     override fun compareTo(other: FeedPost): Int {
-        return createdAt.compareTo(other.createdAt)
+        return other.createdAt.compareTo(createdAt)
     }
 }
