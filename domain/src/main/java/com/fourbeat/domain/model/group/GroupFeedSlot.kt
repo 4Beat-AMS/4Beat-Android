@@ -6,4 +6,8 @@ data class GroupFeedSlot(
     val order: Int,
     val member: User,
     val posts: List<FeedPost>,
-)
+) : Comparable<GroupFeedSlot> {
+    override fun compareTo(other: GroupFeedSlot): Int {
+        return order - other.order
+    }
+}

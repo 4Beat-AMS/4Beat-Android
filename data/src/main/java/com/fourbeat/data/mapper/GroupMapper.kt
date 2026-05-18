@@ -40,14 +40,14 @@ fun GroupFeedResponse.toDomain(): GroupFeed =
         date = date,
         nextDate = nextDate,
         previousDate = previousDate,
-        slots = slots.map(SlotResponse::toDomain),
+        slots = slots.map(SlotResponse::toDomain).sorted(),
     )
 
 fun SlotResponse.toDomain(): GroupFeedSlot =
     GroupFeedSlot(
         order = order,
         member = member.toDomain(),
-        posts = posts.map(SlotPostResponse::toDomain),
+        posts = posts.map(SlotPostResponse::toDomain).sorted(),
     )
 
 fun SlotPostResponse.toDomain(): FeedPost =

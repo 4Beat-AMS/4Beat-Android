@@ -8,4 +8,8 @@ data class FeedPost(
     val videoUrl: String?,
     val comment: String?,
     val createdAt: String,
-)
+) : Comparable<FeedPost> {
+    override fun compareTo(other: FeedPost): Int {
+        return createdAt.compareTo(other.createdAt)
+    }
+}
