@@ -72,4 +72,9 @@ dependencies {
     // media3 cache
     implementation(libs.androidx.media3.datasource)
     implementation(libs.androidx.media3.database)
+
+    // room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 }
