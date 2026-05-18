@@ -13,7 +13,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PostDao {
 
-    @Query("SELECT * FROM posts WHERE groupId = :groupId AND date = :date ORDER BY slotOrder ASC, createdAt ASC")
+    @Query("""
+        SELECT * FROM posts 
+        WHERE groupId = :groupId AND date = :date 
+        ORDER BY slotOrder ASC, createdAt ASC
+    """)
     fun observeByGroupAndDate(groupId: Long, date: String): Flow<List<PostEntity>>
 
     @Upsert
