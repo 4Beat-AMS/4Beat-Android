@@ -31,20 +31,40 @@ interface VideoCacheEntryPoint {
 
 @OptIn(UnstableApi::class)
 @Composable
-fun VideoPlayer(
-    modifier: Modifier = Modifier,
-    source: VideoSource,
-    isActive: Boolean = true,
-) {
-    val context = LocalContext.current
+fun rememberExoPlayer(): ExoPlayer = rememberExoPlayerPool(size = 1).first()
 
+@OptIn(UnstableApi::class)
+@Composable
+fun rememberExoPlayerPool(size: Int = 3): List<ExoPlayer> {
+    val context = LocalContext.current
     val dataSourceFactory = remember {
         EntryPointAccessors.fromApplication(
             context.applicationContext,
             VideoCacheEntryPoint::class.java,
         ).dataSourceFactory()
     }
+    val players = remember {
+        List(size) {
+            ExoPlayer.Builder(context)
+                .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+                .build()
+                .apply { repeatMode = ExoPlayer.REPEAT_MODE_ONE }
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose { players.forEach { it.release() } }
+    }
+    return players
+}
 
+@OptIn(UnstableApi::class)
+@Composable
+fun VideoPlayer(
+    modifier: Modifier = Modifier,
+    exoPlayer: ExoPlayer,
+    source: VideoSource,
+    isActive: Boolean = true,
+) {
     val uri = remember(source) {
         when (source) {
             is VideoSource.Local -> source.file.toUri()
@@ -52,23 +72,13 @@ fun VideoPlayer(
         }
     }
 
-    val exoPlayer = remember(uri) {
-        ExoPlayer.Builder(context)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
-            .build()
-            .apply {
-                setMediaItem(MediaItem.fromUri(uri))
-                repeatMode = ExoPlayer.REPEAT_MODE_ONE
-                prepare()
-            }
+    LaunchedEffect(uri, exoPlayer) {
+        exoPlayer.setMediaItem(MediaItem.fromUri(uri))
+        exoPlayer.prepare()
     }
 
     LaunchedEffect(isActive, exoPlayer) {
         if (isActive) exoPlayer.play() else exoPlayer.pause()
-    }
-
-    DisposableEffect(exoPlayer) {
-        onDispose { exoPlayer.release() }
     }
 
     AndroidView(
@@ -84,9 +94,7 @@ fun VideoPlayer(
             }
         },
         update = { view ->
-            if (view.player != exoPlayer) {
-                view.player = exoPlayer
-            }
+            if (view.player != exoPlayer) view.player = exoPlayer
             view.useController = false
             view.hideController()
         },

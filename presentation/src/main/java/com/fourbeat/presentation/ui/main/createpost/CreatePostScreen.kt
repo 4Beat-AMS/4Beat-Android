@@ -51,6 +51,7 @@ import com.fourbeat.presentation.ui.component.FourBeatTextArea
 import com.fourbeat.presentation.ui.component.NetworkImage
 import com.fourbeat.presentation.ui.component.TitleTopBar
 import com.fourbeat.presentation.ui.component.VideoPlayer
+import com.fourbeat.presentation.ui.component.rememberExoPlayer
 import com.fourbeat.presentation.ui.main.VIDEO_PATH_KEY
 import com.fourbeat.presentation.ui.util.noRippleClickable
 import java.io.File
@@ -267,7 +268,8 @@ private fun VideoPreview(
     ) {
         VideoPlayer(
             modifier = Modifier.fillMaxSize(),
-            source = VideoSource.Local(videoFile)
+            exoPlayer = rememberExoPlayer(),
+            source = VideoSource.Local(videoFile),
         )
         IconButton(
             modifier = Modifier.align(Alignment.TopEnd),
