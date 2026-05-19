@@ -11,7 +11,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.cache.CacheDataSource
+import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.AspectRatioFrameLayout
@@ -26,7 +26,7 @@ import dagger.hilt.components.SingletonComponent
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface VideoCacheEntryPoint {
-    fun cacheDataSourceFactory(): CacheDataSource.Factory
+    fun dataSourceFactory(): DataSource.Factory
 }
 
 @OptIn(UnstableApi::class)
@@ -38,11 +38,11 @@ fun VideoPlayer(
 ) {
     val context = LocalContext.current
 
-    val cacheDataSourceFactory = remember {
+    val dataSourceFactory = remember {
         EntryPointAccessors.fromApplication(
             context.applicationContext,
             VideoCacheEntryPoint::class.java,
-        ).cacheDataSourceFactory()
+        ).dataSourceFactory()
     }
 
     val uri = remember(source) {
@@ -54,7 +54,7 @@ fun VideoPlayer(
 
     val exoPlayer = remember(uri) {
         ExoPlayer.Builder(context)
-            .setMediaSourceFactory(DefaultMediaSourceFactory(cacheDataSourceFactory))
+            .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .build()
             .apply {
                 setMediaItem(MediaItem.fromUri(uri))

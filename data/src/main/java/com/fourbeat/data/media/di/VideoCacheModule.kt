@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.DataSource
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
@@ -20,8 +22,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object VideoCacheModule {
-
-    private const val MAX_CACHE_BYTES = 100L * 1024 * 1024  // 100MB
+    private const val MAX_CACHE_BYTES = 200L * 1024 * 1024  // 200MB
 
     @Provides
     @Singleton
@@ -34,9 +35,15 @@ object VideoCacheModule {
 
     @Provides
     @Singleton
-    fun provideCacheDataSourceFactory(cache: SimpleCache): CacheDataSource.Factory =
-        CacheDataSource.Factory()
-            .setCache(cache)
-            .setUpstreamDataSourceFactory(DefaultHttpDataSource.Factory())
-            .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR)
+    fun provideDataSourceFactory(
+        @ApplicationContext context: Context,
+        cache: SimpleCache,
+    ): DataSource.Factory =
+        DefaultDataSource.Factory(
+            context,
+            CacheDataSource.Factory()
+                .setCache(cache)
+                .setUpstreamDataSourceFactory(DefaultHttpDataSource.Factory())
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR),
+        )
 }
