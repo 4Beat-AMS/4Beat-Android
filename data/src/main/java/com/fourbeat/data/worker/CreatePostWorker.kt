@@ -44,8 +44,10 @@ class CreatePostWorker @AssistedInject constructor(
         }
 
         val groupId = inputData.getLong(KEY_GROUP_ID, -1L)
-        val songTitle = inputData.getString(KEY_SONG_TITLE) ?: run { rollbackPostUseCase(tempId); return Result.failure() }
-        val songArtist = inputData.getString(KEY_SONG_ARTIST) ?: run { rollbackPostUseCase(tempId); return Result.failure() }
+        val songTitle = inputData.getString(KEY_SONG_TITLE)
+            ?: run { rollbackPostUseCase(tempId); return Result.failure() }
+        val songArtist = inputData.getString(KEY_SONG_ARTIST)
+            ?: run { rollbackPostUseCase(tempId); return Result.failure() }
         val songImageUrl = inputData.getString(KEY_SONG_IMAGE_URL)
         val comment = inputData.getString(KEY_COMMENT)
         val filePath = inputData.getString(KEY_FILE_PATH)

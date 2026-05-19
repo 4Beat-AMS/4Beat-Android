@@ -52,9 +52,6 @@ class GroupRepositoryImpl @Inject constructor(
     override suspend fun createPost(groupId: Long, request: CreatePostRequest): Post =
         groupDataSource.createPost(groupId = groupId, body = request.asBody()).toDomain()
 
-    override suspend fun getGroupFeed(groupId: Long, date: String): GroupFeed =
-        groupDataSource.getGroupFeed(groupId = groupId, date = date).toDomain()
-
     override fun observeGroupFeed(groupId: Long, date: String): Flow<GroupFeed> =
         postDao.observeByGroupAndDate(groupId, date)
             .map { entities -> entities.toGroupFeed(date) }
@@ -64,7 +61,7 @@ class GroupRepositoryImpl @Inject constructor(
         val response = groupDataSource.getGroupFeed(groupId, date)
         val entities = response.toPostEntities(groupId)
         postDao.replaceStable(groupId, date, entities)
-        return response.toDomain()
+        return entities.toGroupFeed(date)
     }
 
     private suspend fun getSlotOrder(groupId: Long,  date: String, memberId: Long): Int =
