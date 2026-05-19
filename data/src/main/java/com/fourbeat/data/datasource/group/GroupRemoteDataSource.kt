@@ -2,6 +2,7 @@ package com.fourbeat.data.datasource.group
 
 import com.fourbeat.data.network.di.PrivateNetwork
 import com.fourbeat.data.network.dto.group.CreateGroupRequestBody
+import com.fourbeat.data.network.dto.group.GroupFeedResponse
 import com.fourbeat.data.network.dto.group.GroupResponse
 import com.fourbeat.data.network.dto.group.MyPostStatusResponse
 import com.fourbeat.data.network.dto.post.CreatePostRequestBody
@@ -51,5 +52,11 @@ class GroupRemoteDataSource @Inject constructor(
         client
             .post("groups/$groupId/posts") {
                 setBody(body)
+            }.body()
+
+    override suspend fun getGroupFeed(groupId: Long, date: String): GroupFeedResponse =
+        client
+            .get("groups/$groupId/posts") {
+                parameter("date", date)
             }.body()
 }

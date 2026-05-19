@@ -11,6 +11,6 @@ class RegisterUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(request: RegisterRequest): Result<Unit> = runCatching {
         userRepository.register(request)
-            .also { uid -> preferenceRepository.saveUid(uid) }
+            .also { user -> preferenceRepository.saveUser(user) }
     }
 }

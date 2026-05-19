@@ -1,9 +1,11 @@
 package com.fourbeat.domain.repository
 
+import com.fourbeat.domain.model.user.User
 import kotlinx.coroutines.flow.Flow
 
 interface PreferenceRepository {
     val uidFlow: Flow<Long?>
-    suspend fun saveUid(uid: Long)
-    suspend fun clearUid()
+    suspend fun getUser(): User
+    suspend fun saveUser(user: User)
+    suspend fun clearUser()
 }
