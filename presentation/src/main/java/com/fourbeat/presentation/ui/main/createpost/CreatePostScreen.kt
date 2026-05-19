@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavBackStackEntry
 import com.fourbeat.domain.model.post.Song
-import com.fourbeat.presentation.model.post.VideoSource
+import com.fourbeat.domain.model.post.VideoSource
 import com.fourbeat.presentation.theme.Gray100
 import com.fourbeat.presentation.theme.Gray500
 import com.fourbeat.presentation.theme.PrimaryColor

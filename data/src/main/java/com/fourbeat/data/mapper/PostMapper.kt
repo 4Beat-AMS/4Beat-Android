@@ -1,6 +1,7 @@
 package com.fourbeat.data.mapper
 
 import com.fourbeat.data.database.entity.PostEntity
+import com.fourbeat.data.database.entity.PostStatus
 import com.fourbeat.data.network.dto.post.CreatePostRequestBody
 import com.fourbeat.data.network.dto.post.FileUploadUrlRequestBody
 import com.fourbeat.data.network.dto.post.FileUploadUrlResponse
@@ -12,6 +13,8 @@ import com.fourbeat.domain.model.post.FileUploadUrl
 import com.fourbeat.domain.model.post.FileUploadUrlRequest
 import com.fourbeat.domain.model.post.Post
 import com.fourbeat.domain.model.post.Song
+import com.fourbeat.domain.model.post.VideoSource
+import com.fourbeat.domain.model.user.User
 
 fun PostResponse.toDomain(): Post =
     Post(
@@ -44,6 +47,32 @@ fun CreatePostRequest.asBody(): CreatePostRequestBody =
         videoUrl = videoUrl,
     )
 
+fun CreatePostRequest.toEntity(
+    tempId: Long,
+    groupId: Long,
+    today: String,
+    slotOrder: Int,
+    member: User,
+    filePath: String?,
+): PostEntity = PostEntity(
+        id = tempId,
+        groupId = groupId,
+        date = today,
+        memberId = member.id,
+        memberName = member.name,
+        memberNickname = member.nickname,
+        slotOrder = slotOrder,
+        songTitle = song.title,
+        songArtist = song.artist,
+        albumImageUrl = song.albumImageUrl,
+        filePath = filePath,
+        videoUrl = null,
+        comment = comment,
+        status = PostStatus.PENDING,
+        nextDate = null,
+        previousDate = null,
+   )
+
 fun FileUploadUrlResponse.toDomain(): FileUploadUrl =
     FileUploadUrl(
         uploadUrl = uploadUrl,
@@ -56,11 +85,11 @@ fun FileUploadUrlRequest.asBody(): FileUploadUrlRequestBody =
         contentType = contentType,
     )
 
-fun PostEntity.toDomain(): FeedPost =
+fun PostEntity.toDomain(videoSource: VideoSource?): FeedPost =
     FeedPost(
         id = id,
         song = Song(title = songTitle, artist = songArtist, albumImageUrl = albumImageUrl),
-        videoUrl = videoUrl,
+        videoSource = videoSource,
         comment = comment,
         createdAt = createdAt,
     )

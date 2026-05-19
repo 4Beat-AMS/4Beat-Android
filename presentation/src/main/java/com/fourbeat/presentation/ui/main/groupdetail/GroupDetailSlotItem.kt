@@ -27,7 +27,6 @@ import coil3.compose.AsyncImage
 import com.fourbeat.domain.model.user.User
 import com.fourbeat.presentation.model.group.FeedPostUiModel
 import com.fourbeat.presentation.model.group.GroupFeedSlotUiModel
-import com.fourbeat.presentation.model.post.VideoSource
 import com.fourbeat.presentation.theme.Gray100
 import com.fourbeat.presentation.theme.Gray500
 import com.fourbeat.presentation.theme.White
@@ -70,10 +69,10 @@ private fun SlotPostItem(
     isActive: Boolean,
 ) {
     Box(modifier = modifier.clipToBounds()) {
-        if (post.videoUrl != null) {
+        if (post.videoSource != null) {
             VideoPlayer(
                 modifier = Modifier.fillMaxSize(),
-                source = VideoSource.Remote(post.videoUrl),
+                source = post.videoSource,
                 isActive = isActive,
             )
         } else {

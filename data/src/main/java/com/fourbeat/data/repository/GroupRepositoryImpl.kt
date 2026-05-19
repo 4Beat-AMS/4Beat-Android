@@ -1,11 +1,11 @@
 package com.fourbeat.data.repository
 
 import com.fourbeat.data.database.dao.PostDao
-import com.fourbeat.data.database.entity.PostEntity
 import com.fourbeat.data.database.entity.PostStatus
 import com.fourbeat.data.datasource.group.GroupDataSource
 import com.fourbeat.data.mapper.asBody
 import com.fourbeat.data.mapper.toDomain
+import com.fourbeat.data.mapper.toEntity
 import com.fourbeat.data.mapper.toGroupFeed
 import com.fourbeat.data.mapper.toPostEntities
 import com.fourbeat.data.network.dto.group.GroupResponse
@@ -17,7 +17,9 @@ import com.fourbeat.domain.model.post.CreatePostRequest
 import com.fourbeat.domain.model.post.Post
 import com.fourbeat.domain.model.user.User
 import com.fourbeat.domain.repository.GroupRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -56,12 +58,21 @@ class GroupRepositoryImpl @Inject constructor(
     override fun observeGroupFeed(groupId: Long, date: String): Flow<GroupFeed> =
         postDao.observeByGroupAndDate(groupId, date)
             .map { entities -> entities.toGroupFeed(date) }
+            .flowOn(Dispatchers.IO)
 
     override suspend fun refreshGroupFeed(groupId: Long, date: String): GroupFeed {
         val response = groupDataSource.getGroupFeed(groupId, date)
-        postDao.replaceStable(groupId, date, response.toPostEntities(groupId))
+        val entities = response.toPostEntities(groupId)
+        postDao.replaceStable(groupId, date, entities)
         return response.toDomain()
     }
+
+    private suspend fun getSlotOrder(groupId: Long,  date: String, memberId: Long): Int =
+        postDao.getSlotOrderByMember(
+            groupId = groupId,
+            date = date,
+            memberId = memberId
+        ) ?: Int.MAX_VALUE
 
     override suspend fun insertOptimisticPost(
         groupId: Long,
@@ -69,28 +80,22 @@ class GroupRepositoryImpl @Inject constructor(
         request: CreatePostRequest,
         filePath: String?,
     ): Long {
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
         val tempId = UUID.randomUUID().mostSignificantBits.or(Long.MIN_VALUE)
-        postDao.insert(
-            PostEntity(
-                id = tempId,
-                groupId = groupId,
-                date = today,
-                memberId = member.id,
-                memberName = member.name,
-                memberNickname = member.nickname,
-                slotOrder = postDao.getSlotOrderByMember(groupId, today, member.id) ?: Int.MAX_VALUE,
-                songTitle = request.song.title,
-                songArtist = request.song.artist,
-                albumImageUrl = request.song.albumImageUrl,
-                filePath = filePath,
-                videoUrl = null,
-                comment = request.comment,
-                status = PostStatus.PENDING,
-                nextDate = null,
-                previousDate = null,
-            )
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA).format(Date())
+        val slotOrder = getSlotOrder(
+            groupId = groupId,
+            date = today,
+            memberId = member.id
         )
+        val entity = request.toEntity(
+            tempId = tempId,
+            groupId = groupId,
+            today = today,
+            slotOrder = slotOrder,
+            member = member,
+            filePath = filePath
+        )
+        postDao.insert(entity)
         return tempId
     }
 
@@ -100,15 +105,16 @@ class GroupRepositoryImpl @Inject constructor(
 
     override suspend fun confirmPost(tempId: Long, post: Post) {
         val pending = postDao.getById(tempId) ?: return
+        val real = pending.copy(
+            id = post.id,
+            videoUrl = post.videoUrl,
+            filePath = null,
+            createdAt = post.createdAt,
+            status = PostStatus.STABLE,
+        )
         postDao.confirmPost(
             tempId = tempId,
-            realEntity = pending.copy(
-                id = post.id,
-                videoUrl = post.videoUrl,
-                filePath = null,
-                createdAt = post.createdAt,
-                status = PostStatus.STABLE,
-            )
+            realEntity = real
         )
     }
 }

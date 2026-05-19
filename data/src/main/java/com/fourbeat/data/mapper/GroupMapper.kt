@@ -14,7 +14,9 @@ import com.fourbeat.domain.model.group.Group
 import com.fourbeat.domain.model.group.GroupFeed
 import com.fourbeat.domain.model.group.GroupFeedSlot
 import com.fourbeat.domain.model.group.MyPostStatus
+import com.fourbeat.domain.model.post.VideoSource
 import com.fourbeat.domain.model.user.User
+import java.io.File
 
 fun GroupResponse.toDomain(): Group =
     Group(
@@ -57,7 +59,7 @@ fun SlotPostResponse.toDomain(): FeedPost =
     FeedPost(
         id = id,
         song = song.toDomain(),
-        videoUrl = videoUrl,
+        videoSource = videoUrl?.let { VideoSource.Remote(it) },
         comment = comment,
         createdAt = createdAt,
     )
@@ -96,7 +98,17 @@ fun List<PostEntity>.toGroupFeed(date: String): GroupFeed {
             GroupFeedSlot(
                 order = first.slotOrder,
                 member = User(id = memberId, name = first.memberName, nickname = first.memberNickname),
-                posts = entities.map { it.toDomain() }.sorted(),
+                posts = entities.map { entity ->
+                    val videoSource = when (entity.status) {
+                        PostStatus.PENDING -> entity.filePath
+                            ?.let { File(it) }
+                            ?.takeIf { it.exists() }
+                            ?.let { VideoSource.Local(it) }
+                        PostStatus.STABLE -> entity.videoUrl?.let { VideoSource.Remote(it) }
+                        PostStatus.FAILED -> null
+                    }
+                    entity.toDomain(videoSource)
+                }.sorted(),
             )
         }
         .sorted()
