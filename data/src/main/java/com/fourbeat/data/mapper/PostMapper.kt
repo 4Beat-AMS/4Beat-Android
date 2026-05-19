@@ -82,7 +82,7 @@ fun FileUploadUrlResponse.toDomain(): FileUploadUrl =
 fun FileUploadUrlRequest.asBody(): FileUploadUrlRequestBody =
     FileUploadUrlRequestBody(
         fileName = fileName,
-        contentType = contentType,
+        contentType = "video/mp4",
     )
 
 fun PostEntity.toDomain(videoSource: VideoSource?): FeedPost =

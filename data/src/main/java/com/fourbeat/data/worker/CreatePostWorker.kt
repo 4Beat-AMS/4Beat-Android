@@ -46,18 +46,14 @@ class CreatePostWorker @AssistedInject constructor(
         val songImageUrl = inputData.getString(KEY_SONG_IMAGE_URL)
         val comment = inputData.getString(KEY_COMMENT)
         val filePath = inputData.getString(KEY_FILE_PATH)
-        val mimeType = inputData.getString(KEY_MIME_TYPE)
 
-        val videoFileInfo = when {
-            filePath != null && mimeType != null -> {
-                val file = File(filePath)
-                if (!file.exists()) {
-                    rollbackPostUseCase(tempId)
-                    return Result.failure()
-                }
-                VideoFileInfo(file = file, mimeType = mimeType)
+        val videoFileInfo = filePath?.let {
+            val file = File(it)
+            if (!file.exists()) {
+                rollbackPostUseCase(tempId)
+                return Result.failure()
             }
-            else -> null
+            VideoFileInfo(file = file)
         }
 
         if (runAttemptCount >= MAX_RETRY_COUNT) {
@@ -65,14 +61,13 @@ class CreatePostWorker @AssistedInject constructor(
             return Result.failure()
         }
 
-        val videoUrl = videoFileInfo?.let { (file, mime) ->
-            getFileUploadUrlUseCase(request = FileUploadUrlRequest(file.name, mime))
+        val videoUrl = videoFileInfo?.let { (file) ->
+            getFileUploadUrlUseCase(request = FileUploadUrlRequest(file.name))
                 .getOrElse { return Result.retry() }
                 .also {
                     uploadVideoFileUseCase(
                         uploadUrl = it.uploadUrl,
                         file = file,
-                        mimeType = mime
                     ).getOrElse { return Result.retry() }
                 }
                 .videoUrl
@@ -104,7 +99,6 @@ class CreatePostWorker @AssistedInject constructor(
         const val KEY_SONG_IMAGE_URL = "key_song_image_url"
         const val KEY_COMMENT = "key_comment"
         const val KEY_FILE_PATH = "key_file_path"
-        const val KEY_MIME_TYPE = "key_mime_type"
         const val KEY_TEMP_ID = "key_temp_id"
     }
 }

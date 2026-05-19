@@ -53,7 +53,6 @@ import com.fourbeat.presentation.ui.component.TitleTopBar
 import com.fourbeat.presentation.ui.component.VideoPlayer
 import com.fourbeat.presentation.ui.main.VIDEO_PATH_KEY
 import com.fourbeat.presentation.ui.util.noRippleClickable
-import android.webkit.MimeTypeMap
 import java.io.File
 
 @Composable
@@ -90,9 +89,7 @@ fun CreatePostRoute(
             ?.get<String>(VIDEO_PATH_KEY)
             ?.let { path ->
                 val file = File(path)
-                val mimeType = MimeTypeMap.getSingleton()
-                    .getMimeTypeFromExtension(file.extension) ?: "video/mp4"
-                viewModel.onEvent(CreatePostEvent.OnVideoFileSelected(file, mimeType))
+                viewModel.onEvent(CreatePostEvent.OnVideoFileSelected(file))
                 backStackEntry.savedStateHandle.remove<String>(VIDEO_PATH_KEY)
             }
     }
