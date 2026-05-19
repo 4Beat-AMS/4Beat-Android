@@ -38,11 +38,6 @@ class CreatePostWorker @AssistedInject constructor(
         val tempId = inputData.getLong(KEY_TEMP_ID, 0L)
             .takeIf { it != 0L } ?: return Result.failure()
 
-        if (runAttemptCount >= MAX_RETRY_COUNT) {
-            rollbackPostUseCase(tempId)
-            return Result.failure()
-        }
-
         val groupId = inputData.getLong(KEY_GROUP_ID, -1L)
         val songTitle = inputData.getString(KEY_SONG_TITLE)
             ?: run { rollbackPostUseCase(tempId); return Result.failure() }
@@ -54,9 +49,20 @@ class CreatePostWorker @AssistedInject constructor(
         val mimeType = inputData.getString(KEY_MIME_TYPE)
 
         val videoFileInfo = when {
-            filePath != null && mimeType != null ->
-                VideoFileInfo(file = File(filePath), mimeType = mimeType)
+            filePath != null && mimeType != null -> {
+                val file = File(filePath)
+                if (!file.exists()) {
+                    rollbackPostUseCase(tempId)
+                    return Result.failure()
+                }
+                VideoFileInfo(file = file, mimeType = mimeType)
+            }
             else -> null
+        }
+
+        if (runAttemptCount >= MAX_RETRY_COUNT) {
+            rollbackPostUseCase(tempId)
+            return Result.failure()
         }
 
         val videoUrl = videoFileInfo?.let { (file, mime) ->
